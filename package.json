@@ -1,0 +1,23 @@
+{
+  "name": "i18n-react-deal",
+  "version": "1.0.0",
+  "description": "Deal i18n for react project quickly",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LilyLoveLife/i18n-react-deal.git"
+  },
+  "keywords": [
+    "i18",
+    "react"
+  ],
+  "author": "Lily",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LilyLoveLife/i18n-react-deal/issues"
+  },
+  "homepage": "https://github.com/LilyLoveLife/i18n-react-deal#readme"
+}

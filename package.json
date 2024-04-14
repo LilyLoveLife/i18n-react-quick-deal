@@ -19,5 +19,13 @@
   "bugs": {
     "url": "https://github.com/LilyLoveLife/i18n-react-deal/issues"
   },
-  "homepage": "https://github.com/LilyLoveLife/i18n-react-deal#readme"
+  "homepage": "https://github.com/LilyLoveLife/i18n-react-deal#readme",
+  "devDependencies": {
+    "@types/babel__template": "^7.4.4",
+    "@types/node": "^20.12.7"
+  },
+  "dependencies": {
+    "@babel/core": "^7.24.4",
+    "@babel/template": "^7.24.0"
+  }
 }

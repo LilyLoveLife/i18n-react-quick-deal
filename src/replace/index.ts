@@ -3,8 +3,8 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import babel from '@babel/core'
 import template from '@babel/template'
-import t, { Statement, TemplateLiteral GeneratorResult , StringLiteral } from '@babel/types'
-
+import t, { Statement, ImportDeclaration, TemplateLiteral, BlockStatement, V8IntrinsicIdentifier } from '@babel/types' //GeneratorResult , StringLiteral
+import {validTopFunctionPath} from '../utils'
 
 import traverse, {Node, NodePath, } from '@babel/traverse'
 import fs from 'fs'
@@ -28,12 +28,12 @@ const includesChinese = (str: string) => {
 const buildCallExpression = (funcName: string, nodeValue: string) => {
   return t.callExpression(t.identifier(funcName), [t.stringLiteral(nodeValue)])
 }
-const replaceWithJsxExpression = (path, funcName: string, nodeValue: string) => {
+const replaceWithJsxExpression = (path: NodePath, funcName: string, nodeValue: string) => {
   path.replaceWith(t.jsxExpressionContainer(t.callExpression(t.identifier(funcName), [t.stringLiteral(nodeValue)])))
 }
-const isInConsole = (path) => {
-  return path.findParent(p => p.isCallExpression()) && path.parent.callee.object.name === 'console'
-}
+// const isInConsole = (path: NodePath) => {
+//   return path.findParent((p: NodePath) => p.isCallExpression()) && path.parent.callee.object.name === 'console'
+// }
 let flag_garther = false
 const toTranslateSet = new Set()
 
@@ -56,12 +56,17 @@ const getNewContent = (filePath: string) => {
   // const { t } = useTranslation();
   traverse(ast, {
     Program({node}) {
-      const importList = node.body.filter(item => item.type === 'ImportDeclaration')
+      const importList = node.body.filter(item => item.type === 'ImportDeclaration') as ImportDeclaration[]
+
       const imported = importList.find(item => {
         const source = item.source.value === 'react-i18next' // react-i18next
         const importedHooks = item.specifiers.find((item) => {
           if (item.type === 'ImportSpecifier') {
-            return item.imported.name === 'useTranslation'
+            //  排除StringLiteral（我也不知道为啥还会有StringLiteral）
+            //  eliminate type 'StringLiteral'（i don't know why has StringLiteral）
+            if (item.imported && item.imported.type === 'Identifier') {
+                return item.imported.name === 'useTranslation'
+            }
           }
           return false
         })
@@ -79,7 +84,7 @@ const getNewContent = (filePath: string) => {
     StringLiteral(path) {
       const { node, parentPath }: NodePath = path
       if (includesChinese(node.value)) {
-        const translated = parentPath?.node?.type === 'CallExpression' && parentPath.node.callee.name === FuncName
+        const translated = parentPath?.node?.type === 'CallExpression' &&  parentPath.node.callee.type === 'Identifier' && parentPath.node.callee?.name === FuncName
         if (translated) {
           return
         }
@@ -151,17 +156,24 @@ const getNewContent = (filePath: string) => {
           quasis[quasis.length - 1].tail = true;
     },
     ArrowFunctionExpression(path) {
-      const parentFunctionPath = path.findParent(p => p.isArrowFunctionExpression() || p.isFunctionExpression())
-      if (!parentFunctionPath) {
+    //   const parentFunctionPath = path.findParent(p => p.isArrowFunctionExpression() || p.isFunctionExpression())
+      const isTopFunctionPath = validTopFunctionPath(path)
+      if (isTopFunctionPath) {
         const { parent } = path
         console.log("找到最外层的函数:", path.node) // , path.node.argument
-        const hooksAst = template.ast`${HooksStr}`
-        path.node.body?.body?.unshift(hooksAst)
+        const hooksAst = template.ast`${HooksStr}` as Statement
+        const body = path.node.body
+        if (body.type === 'BlockStatement') {
+            (path.node.body as BlockStatement)?.body?.unshift(hooksAst)
+        }
+        // 其他：type是Expression（BinaryExpression）  走StringLiteral
+        // type Expression = ArrayExpression | AssignmentExpression | BinaryExpression | CallExpression | ConditionalExpression | FunctionExpression | Identifier | StringLiteral | NumericLiteral | NullLiteral | BooleanLiteral | RegExpLiteral | LogicalExpression | MemberExpression ....
       }
     },
     FunctionExpression(path) {
-      const parentFunctionPath = path.findParent(p => p.isArrowFunctionExpression() || p.isFunctionExpression())
-      if (!parentFunctionPath) {
+    //   const parentFunctionPath = path.findParent(p => p.isArrowFunctionExpression() || p.isFunctionExpression())
+      const isTopFunctionPath = validTopFunctionPath(path)
+      if (!isTopFunctionPath) {
         const { parent } = path
         // console.log("找到最外层的函数:", path.node) // , path.node.argument
         const hooksAst = template.ast`${HooksStr}`

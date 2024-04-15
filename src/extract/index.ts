@@ -19,9 +19,11 @@ const Reg_Chinese = /[^\x00-\xff]/ // 包括全角标点符号 ['注意啦，安
 const isChinese = (str: string) => {
     return Reg_Chinese.test(str)
 }
+const FuncName = 't'
 const fileTypeList = ['.tsx', '.ts']
 // let flag_extract = false
 const Set_ToTranslate = new Set()
+
 
 const astTraverse = (filePath: string) => {
     const {ast} = babel.transformFileSync(filePath, {
@@ -30,9 +32,12 @@ const astTraverse = (filePath: string) => {
         plugins: ['jsx', 'typescript'],
       },
       ast: true,
-    })
+    }) || {}
+    if (!ast) {
+      return
+    }
     traverse(ast, {
-      StringLiteral(path) {
+      StringLiteral(path: { node: any; parentPath: any }) {
         const { node, parentPath } = path
         if (isChinese(node.value)) {
             const translated = parentPath?.node?.type === 'CallExpression' && parentPath.node.callee.name === FuncName
@@ -45,7 +50,7 @@ const astTraverse = (filePath: string) => {
             Set_ToTranslate.add(node.value)
         }
       },
-      JSXText(path) {
+      JSXText(path: { node: any }) {
         const {node} = path
         if (isChinese(node.value)) {
             if (!Set_ToTranslate.has(node.value)) {
@@ -55,7 +60,7 @@ const astTraverse = (filePath: string) => {
       },
       TemplateLiteral(path) {
         const { quasis } = path.node
-            quasis.forEach((node) => {
+            quasis.forEach((node: { value: { raw: any } }) => {
               const { value: { raw } } = node
               if (isChinese(raw)) {
                 console.log(raw)
@@ -84,7 +89,7 @@ const dealEachFile = (filePath: string) => {
      
     }
 }
-async function traverseFilesInDirectory(directoryPath) {
+async function traverseFilesInDirectory(directoryPath: string) {
     const stats = fs.statSync(directoryPath);
     if (stats.isFile()) {
       console.log('是一个文件');
@@ -155,5 +160,6 @@ const extractChinese = () => {
   
   
 }
+extractChinese()
 export default extractChinese
 

@@ -8,11 +8,13 @@
  */
 import path from 'path'
 import fs from 'fs'
-import babel from '@babel/core'
+import {writeFileIfNotExists} from '../utils'
 // import template from '@babel/template'
 // EJS 
-import _traverse from '@babel/traverse'
+import _traverse, {Node, NodePath, } from '@babel/traverse'
 // const traverse1 = _traverse.default
+
+import babel from '@babel/core'
 const traverse = babel.traverse 
 // import t from '@babel/types'
 // const projectRoot = process.cwd()
@@ -40,10 +42,13 @@ const astTraverse = (filePath: string) => {
       return
     }
     traverse(ast, {
-      StringLiteral(path: { node: any; parentPath: any }) {
-        const { node, parentPath } = path
+      StringLiteral(path) {
+        const { node, parentPath } = path  // parentPath是null ???
         if (isChinese(node.value)) {
-            const translated = parentPath?.node?.type === 'CallExpression' && parentPath.node.callee.name === FuncName
+            const parentNode = parentPath?.node
+            const translated = parentNode?.type === 'CallExpression'
+              &&  parentNode?.callee.type === 'Identifier'
+              && parentNode.callee.name === FuncName
             if (translated) {
                 return
             }
@@ -53,7 +58,7 @@ const astTraverse = (filePath: string) => {
             Set_ToTranslate.add(node.value)
         }
       },
-      JSXText(path: { node: any }) {
+      JSXText(path) {
         const {node} = path
         if (isChinese(node.value)) {
             if (!Set_ToTranslate.has(node.value)) {
@@ -110,15 +115,8 @@ async function traverseFilesInDirectory(directoryPath: string) {
 const traverseAllFiles = (filePath: string) => {
     traverseFilesInDirectory(filePath)
 }
-const writeFile = async (jsonStr_toTraslate: string, filePath: string) => {
-    fs.writeFile(filePath, jsonStr_toTraslate, 'utf8', (writeErr) => {
-        if (writeErr) {
-          console.error(writeErr);
-          return writeErr
-        }
-        console.log('文件内容已修改。');
-        return true
-      });
+const writeFile = async (jsonStr_toTraslate: string, directoryPath: string, fileName: string) => {
+  writeFileIfNotExists(directoryPath, fileName, jsonStr_toTraslate)
 }
 const extractChinese = () => {
     // const filePath = path.join(__dirname, FilePath_ToTranslate)
@@ -127,10 +125,13 @@ const extractChinese = () => {
     console.log('-----filePath-----', filePath)
     traverseAllFiles(filePath)
     const jsonStr_toTraslate = JSON.stringify(Array.from(Set_ToTranslate))
-    const destinateFileName = new Date().getTime()
-    const destinateFilePath = path.join(projectRoot, `./src/locale/toTranslate/${destinateFileName}.json`);
+    // const destinateFileName = new Date().getTime()
+    // const destinateFilePath = path.join(projectRoot, `./src/locale/toTranslate/${destinateFileName}.json`);
 
-    writeFile(jsonStr_toTraslate, destinateFilePath)
+    const destinateDirPath = path.join(projectRoot, `./src/locale/toTranslate/`);
+    const destinateFileName = `${new Date().getTime()}.json`
+    console.log('--destinateDirPath-destinateFileName---', destinateDirPath, destinateFileName)
+    writeFile(jsonStr_toTraslate, destinateDirPath, destinateFileName)
     // 检查文件是否存在于给定路径
     // if (fs.existsSync(filePath)) {
     //   console.log('文件存在');

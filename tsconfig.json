@@ -2,16 +2,20 @@
     "compilerOptions": {
       "target": "es5",
       "module": "ES6",
+      "lib": ["dom", "dom.iterable", "esnext"],
       "esModuleInterop": true,
       "moduleResolution": "node",
       "declaration": true,
+      "baseUrl": "./src",
       "outDir": "./lib",
       "strict": true,
       "skipLibCheck": true,
+      "isolatedModules": true,
     },
     "include": [
       "src/**/*.ts"
-    ]
+    ],
+    "exclude": ["node_modules/*", "src/test/*"]
   }
 // {
 //   "compilerOptions": {

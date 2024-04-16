@@ -56,7 +56,7 @@ const getNewContent = (filePath: string) => {
   // const { t } = useTranslation();
   traverse(ast, {
     Program({node}) {
-      const importList = node.body.filter(item => item.type === 'ImportDeclaration') as ImportDeclaration[]
+      const importList = node.body.filter((item: { type: string })=> item.type === 'ImportDeclaration') as ImportDeclaration[]
 
       const imported = importList.find(item => {
         const source = item.source.value === 'react-i18next' // react-i18next
@@ -82,9 +82,10 @@ const getNewContent = (filePath: string) => {
       }
     },
     StringLiteral(path) {
-      const { node, parentPath }: NodePath = path
+      const { node, parentPath } = path
       if (includesChinese(node.value)) {
-        const translated = parentPath?.node?.type === 'CallExpression' &&  parentPath.node.callee.type === 'Identifier' && parentPath.node.callee?.name === FuncName
+        const parentNode = parentPath?.node
+        const translated = parentNode?.type === 'CallExpression' &&  parentNode?.callee.type === 'Identifier' && parentNode?.callee?.name === FuncName
         if (translated) {
           return
         }
@@ -92,7 +93,7 @@ const getNewContent = (filePath: string) => {
         if (parentPath.isJSXAttribute()) {
           path.replaceWith(t.jSXExpressionContainer(t.stringLiteral(node.value)))
           // path.replaceWithSourceString(`{${FuncName}('${node.value}')}`)
-        } else if (t.isBinaryExpression(path.parentPath.node) || t.isConditionalExpression(path.parentPath.node)) {
+        } else if (t.isBinaryExpression(parentPath.node) || t.isConditionalExpression(parentPath.node)) {
             const quasisItem = t.templateElement(
           {
               raw: node.value,
@@ -130,7 +131,7 @@ const getNewContent = (filePath: string) => {
     TemplateLiteral(path) {
       const { expressions, quasis } = path.node
           let countExpressions = 0;
-          quasis.forEach((node, index) => {
+          quasis.forEach((node: { value: any; tail?: any }, index: number) => {
             const { value: { raw }, tail, } = node
             if (includesChinese(raw)) {
               console.log(raw)

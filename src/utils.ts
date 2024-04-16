@@ -9,10 +9,10 @@ export const validTopFunctionPath = (path: NodePath) => {
 export const writeFileIfNotExists = (directoryPath: string, fileName: string, content: string) => {
    // 检查目录是否存在
    if (!fs.existsSync(directoryPath)) {
-     fs.mkdirSync(directoryPath); // 如果不存在，创建目录
+     fs.mkdirSync(directoryPath, { recursive: true }); // 如果不存在，创建目录
    }
   
-   const filePath = path.join(directoryPath, fileName);
+   const filePath = `${directoryPath}/${fileName}`
   
    // 检查文件是否存在
    if (!fs.existsSync(filePath)) {

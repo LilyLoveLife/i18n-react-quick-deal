@@ -10,7 +10,10 @@ import path from 'path'
 import fs from 'fs'
 import babel from '@babel/core'
 // import template from '@babel/template'
-import traverse from '@babel/traverse'
+// EJS 
+import _traverse from '@babel/traverse'
+// const traverse1 = _traverse.default
+const traverse = babel.traverse 
 // import t from '@babel/types'
 // const projectRoot = process.cwd()
 // const bb = path.join(projectRoot, './test/index.tsx');
@@ -120,11 +123,12 @@ const writeFile = async (jsonStr_toTraslate: string, filePath: string) => {
 const extractChinese = () => {
     // const filePath = path.join(__dirname, FilePath_ToTranslate)
     const projectRoot = process.cwd()
-    const filePath = path.join(projectRoot, './test/index.tsx');
+    const filePath = path.join(projectRoot, './src/test/index.ts');
+    console.log('-----filePath-----', filePath)
     traverseAllFiles(filePath)
     const jsonStr_toTraslate = JSON.stringify(Array.from(Set_ToTranslate))
     const destinateFileName = new Date().getTime()
-    const destinateFilePath = path.join(projectRoot, `./src/locale/toTranslate/${destinateFileName}`);
+    const destinateFilePath = path.join(projectRoot, `./src/locale/toTranslate/${destinateFileName}.json`);
 
     writeFile(jsonStr_toTraslate, destinateFilePath)
     // 检查文件是否存在于给定路径

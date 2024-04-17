@@ -11,7 +11,7 @@ import fs from 'fs'
 import {writeFileIfNotExists} from '../utils'
 // import template from '@babel/template'
 // EJS 
-import _traverse, {Node, NodePath, } from '@babel/traverse'
+// import _traverse, {Node, NodePath, } from '@babel/traverse'
 // const traverse1 = _traverse.default
 
 import babel from '@babel/core'

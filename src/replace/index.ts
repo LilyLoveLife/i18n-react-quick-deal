@@ -2,16 +2,23 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable import/no-extraneous-dependencies */
 import babel from '@babel/core'
-import template from '@babel/template'
+// import _template from '@babel/template'
 import t, { Statement, ImportDeclaration, TemplateLiteral, BlockStatement, V8IntrinsicIdentifier } from '@babel/types' //GeneratorResult , StringLiteral
 import {validTopFunctionPath} from '../utils'
 
-import traverse, {Node, NodePath, } from '@babel/traverse'
+import _traverse, {Node, NodePath, } from '@babel/traverse'
 import fs from 'fs'
 // import path from 'node:path'
 import path from 'path';
 
-import generator from '@babel/generator'
+// import generator from '@babel/generator'
+import _generator from '@babel/generator'
+
+const traverse = babel.traverse 
+// const template = _template.default 
+const template = babel.template
+const generator = (_generator as any).default
+// const generate = CodeGenerator.default
 
 // '`注意啦，安全！${name} 是个boy`
 // const chineseReg = /[\u4e00-\u9fa5]+/g // 不包括全角标点符号 ['注意啦', '安全', '是个']
@@ -251,4 +258,5 @@ const replaceChinese = () => {
     const filePath = `${root}/src`
     readFilesInDirectory(filePath)
 }
+replaceChinese() // test
 export default replaceChinese

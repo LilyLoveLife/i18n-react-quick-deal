@@ -1,5 +1,5 @@
 
-import  extract  from './src/extract/index'
+import  extract  from './src/extract/index.ts'
 // import  replace  from './src/replace/index'
 
 export {

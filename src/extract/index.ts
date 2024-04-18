@@ -8,7 +8,7 @@
  */
 import path from 'path'
 import fs from 'fs'
-import {writeFileIfNotExists} from '../utils'
+import {writeFileIfNotExists} from '../utils.js'
 // import template from '@babel/template'
 // EJS 
 // import _traverse, {Node, NodePath, } from '@babel/traverse'

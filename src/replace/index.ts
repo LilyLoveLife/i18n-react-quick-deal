@@ -255,7 +255,7 @@ async function readFilesInDirectory(directoryPath: string) {
 // const result = getNewContent(file)
 const replaceChinese = () => {
     const root = process.cwd();
-    const filePath = `${root}/src`
+    const filePath = `${root}/src/test`
     readFilesInDirectory(filePath)
 }
 replaceChinese() // test

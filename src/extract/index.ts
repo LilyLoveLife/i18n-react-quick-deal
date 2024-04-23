@@ -9,6 +9,8 @@
 import path from 'path'
 import fs from 'fs'
 import {writeFileIfNotExists} from '../utils.js'
+import t, {  Expression, TSType, Statement, ImportDeclaration, TemplateLiteral, BlockStatement, V8IntrinsicIdentifier } from '@babel/types' //GeneratorResult , StringLiteral
+
 // import template from '@babel/template'
 // EJS 
 // import _traverse, {Node, NodePath, } from '@babel/traverse'
@@ -67,7 +69,29 @@ const astTraverse = (filePath: string) => {
         }
       },
       TemplateLiteral(path) {
-        const { quasis } = path.node
+        const { expressions, quasis } = path.node
+        const hasChinese = quasis.find((each) => {
+          const { value: { raw }, tail, } = each
+          return isChinese(raw)
+        })
+        const len = quasis.length
+        const key: string[] = []
+        // 抽取中文
+      if (hasChinese) {
+        quasis.forEach((each, index) => {
+          const { value: { raw }, tail, } = each
+          key.push(raw)
+          if (index < len - 1) {
+           const expression: Expression | TSType = expressions[index]
+            if (expression.hasOwnProperty('name')) {
+              key.push(`{{${(expression as any).name}}}`)
+            } else {
+              key.push(`{{param${index}}}`)
+            }
+          }
+        })
+        console.log('---TemplateLiteral---', key.join(''))
+      }
             quasis.forEach((node: { value: { raw: any } }) => {
               const { value: { raw } } = node
               if (isChinese(raw)) {

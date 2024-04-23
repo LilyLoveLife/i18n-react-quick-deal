@@ -3,7 +3,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import babel from '@babel/core'
 // import _template from '@babel/template'
-import t, { Statement, ImportDeclaration, TemplateLiteral, BlockStatement, V8IntrinsicIdentifier } from '@babel/types' //GeneratorResult , StringLiteral
+import t, { Statement, ImportDeclaration, TemplateLiteral, BlockStatement, ObjectProperty, Expression, TSType, V8IntrinsicIdentifier } from '@babel/types' //GeneratorResult , StringLiteral
 import {validTopFunctionPath} from '../utils'
 
 import _traverse, {Node, NodePath, } from '@babel/traverse'
@@ -137,6 +137,58 @@ const getNewContent = (filePath: string) => {
     },
     TemplateLiteral(path) {
       const { expressions, quasis } = path.node
+      const hasChinese = quasis.find((each) => {
+        const { value: { raw }, tail, } = each
+        return includesChinese(raw)
+      })
+      if (hasChinese) {
+        const len = quasis.length
+        const word:string[] = []
+        const params:string[] = []
+        expressions.forEach((expression, index) => {
+          if (Object.prototype.hasOwnProperty.call(expression, 'name')) {
+            params.push(`{{${(expression as any).name}}}`)
+          } else {
+            params.push(`{{param${index}}}`)
+          }
+        })
+        console.log('--params----', params)
+        quasis.forEach((each, index) => {
+          const { value: { raw }, tail, } = each
+          word.push(raw)
+          if (index < len - 1) {
+            word.push(params[index])
+           }
+        })
+
+        const paramKeys: string[] = []
+        expressions.forEach((expression, index) => {
+          if (Object.prototype.hasOwnProperty.call(expression, 'name')) {
+            paramKeys.push(`${(expression as any).name}`)
+          } else {
+            paramKeys.push(`params${index}`)
+          }
+        })
+        const callee = t.identifier(FuncName)
+        const argumentList = []
+        argumentList.push(t.stringLiteral(word.join('')))
+        const properties: ObjectProperty[] = []
+        paramKeys.forEach((paramKey, index) => {
+          console.log('---paramKey----', paramKey)
+          // t.cloneNode(expressions[index] as Expression, true)
+          if (t.isExpression(expressions[index])) {
+            const objectProperty = t.objectProperty(t.stringLiteral(paramKey), expressions[index] as Expression) // 不能是TSType
+            properties.push(objectProperty)
+          }
+          // properties.push(t.objectProperty(t.stringLiteral(key), t.identifier(key)))
+        })
+        if (properties && properties.length) {
+          const objectExpression = t.objectExpression(properties);
+          argumentList.push(objectExpression)
+        }
+        const callExpression = t.callExpression(callee, argumentList.length ? argumentList : [])
+        path.replaceWith(callExpression)
+      }
           let countExpressions = 0;
           quasis.forEach((node: { value: any; tail?: any }, index: number) => {
             const { value: { raw }, tail, } = node

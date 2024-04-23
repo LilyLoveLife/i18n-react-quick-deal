@@ -4,7 +4,7 @@
 import babel from '@babel/core'
 // import _template from '@babel/template'
 import t, { Statement, ImportDeclaration, TemplateLiteral, BlockStatement, ObjectProperty, Expression, TSType, V8IntrinsicIdentifier } from '@babel/types' //GeneratorResult , StringLiteral
-import {validTopFunctionPath} from '../utils'
+import {validTopFunctionPath} from '../utils.js'
 
 import _traverse, {Node, NodePath, } from '@babel/traverse'
 import fs from 'fs'
@@ -259,7 +259,7 @@ const getNewContent = (filePath: string) => {
     //   // );
     // }
   })
-  const res = generator(ast)
+  const res = generator(ast, {jsescOption: {minimal: true}})
   return res
 }
 const dealFile = (filePath: string) => {
@@ -310,5 +310,5 @@ const replaceChinese = () => {
     const filePath = `${root}/src/test`
     readFilesInDirectory(filePath)
 }
-replaceChinese() // test
+// replaceChinese() // test
 export default replaceChinese

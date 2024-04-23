@@ -7,6 +7,10 @@
   "files": [
     "lib"
   ],
+  "bin": {
+    "i18n-react-extract": "./lib/extract",
+    "i18n-react-replace": "./lib/replace"
+  },
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"

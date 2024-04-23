@@ -91,18 +91,23 @@ const astTraverse = (filePath: string) => {
           }
         })
         console.log('---TemplateLiteral---', key.join(''))
+        const chineseExpression = key.join('') // 你好，{{name}}
+        if (!Set_ToTranslate.has(chineseExpression)) {
+          Set_ToTranslate.add(chineseExpression)
+        }
       }
-            quasis.forEach((node: { value: { raw: any } }) => {
-              const { value: { raw } } = node
-              if (isChinese(raw)) {
-                console.log(raw)
-                if (isChinese(raw)) {
-                    if (!Set_ToTranslate.has(raw)) {
-                        Set_ToTranslate.add(raw)
-                    }
-                }
-              }
-            })
+      
+            // quasis.forEach((node: { value: { raw: any } }) => {
+            //   const { value: { raw } } = node
+            //   if (isChinese(raw)) {
+            //     console.log(raw)
+            //     if (isChinese(raw)) {
+            //         if (!Set_ToTranslate.has(raw)) {
+            //             Set_ToTranslate.add(raw)
+            //         }
+            //     }
+            //   }
+            // })
       },
     })
   }
@@ -189,6 +194,6 @@ const extractChinese = () => {
   
   
 }
-extractChinese()
+// extractChinese()
 export default extractChinese
 

@@ -1,11 +1,5 @@
-/*
- * @Description: 
- * @version: 
- * @Author: 
- * @Date: 2024-04-14 21:50:48
- * @LastEditors: Please set LastEditors
- * @LastEditTime: 2024-04-15 00:56:32
- */
+#!/usr/bin/env node
+
 import path from 'path'
 import fs from 'fs'
 import {writeFileIfNotExists} from '../utils.js'
@@ -150,15 +144,16 @@ const writeFile = async (jsonStr_toTraslate: string, directoryPath: string, file
 const extractChinese = () => {
     // const filePath = path.join(__dirname, FilePath_ToTranslate)
     const projectRoot = process.cwd()
-    const filePath = path.join(projectRoot, './src/test/index.ts');
+    const filePath = path.join(projectRoot, './src/test/index.tsx');
     console.log('-----filePath-----', filePath)
     traverseAllFiles(filePath)
-    const jsonStr_toTraslate = JSON.stringify(Array.from(Set_ToTranslate))
+    // const jsonStr_toTraslate = JSON.stringify(Array.from(Set_ToTranslate))
+    const jsonStr_toTraslate = Array.from(Set_ToTranslate).join('\n')
     // const destinateFileName = new Date().getTime()
     // const destinateFilePath = path.join(projectRoot, `./src/locale/toTranslate/${destinateFileName}.json`);
 
     const destinateDirPath = path.join(projectRoot, `./src/locale/toTranslate/`);
-    const destinateFileName = `${new Date().getTime()}.json`
+    const destinateFileName = `${new Date().getTime()}.txt`
     console.log('--destinateDirPath-destinateFileName---', destinateDirPath, destinateFileName)
     writeFile(jsonStr_toTraslate, destinateDirPath, destinateFileName)
     // 检查文件是否存在于给定路径
@@ -194,6 +189,6 @@ const extractChinese = () => {
   
   
 }
-// extractChinese()
+extractChinese()
 export default extractChinese
 

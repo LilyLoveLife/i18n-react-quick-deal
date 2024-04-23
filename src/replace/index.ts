@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+ 
 /* eslint-disable no-control-regex */
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable import/no-extraneous-dependencies */
@@ -307,7 +309,7 @@ async function readFilesInDirectory(directoryPath: string) {
 // const result = getNewContent(file)
 const replaceChinese = () => {
     const root = process.cwd();
-    const filePath = `${root}/src/test`
+    const filePath = `${root}/src/test/index.tsx`
     readFilesInDirectory(filePath)
 }
 // replaceChinese() // test

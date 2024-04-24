@@ -57,8 +57,10 @@ const astTraverse = (filePath: string) => {
       JSXText(path) {
         const {node} = path
         if (isChinese(node.value)) {
-            if (!Set_ToTranslate.has(node.value)) {
-                Set_ToTranslate.add(node.value)
+          // 去除空格、换行符、制表符
+            const replacedValue = node.value.replace(/(^\s+|\s+$)/g, '');
+            if (!Set_ToTranslate.has(replacedValue)) {
+                Set_ToTranslate.add(replacedValue)
             }
         }
       },
@@ -144,7 +146,7 @@ const writeFile = async (jsonStr_toTraslate: string, directoryPath: string, file
 const extractChinese = () => {
     // const filePath = path.join(__dirname, FilePath_ToTranslate)
     const projectRoot = process.cwd()
-    const filePath = path.join(projectRoot, './src/test/index.tsx');
+    const filePath = path.join(projectRoot, './src/test'); // /index.tsx
     console.log('-----filePath-----', filePath)
     traverseAllFiles(filePath)
     // const jsonStr_toTraslate = JSON.stringify(Array.from(Set_ToTranslate))

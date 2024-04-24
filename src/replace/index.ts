@@ -6,7 +6,7 @@
 import babel from '@babel/core'
 // import _template from '@babel/template'
 import t, { Statement, ImportDeclaration, TemplateLiteral, BlockStatement, ObjectProperty, Expression, TSType, V8IntrinsicIdentifier } from '@babel/types' //GeneratorResult , StringLiteral
-import {validTopFunctionPath} from '../utils.js'
+import {validTopFunctionPath, isInFunction, getTopPath, checkAndImport_TFuncOfI18next} from '../utils.js'
 
 import _traverse, {Node, NodePath, } from '@babel/traverse'
 import fs from 'fs'
@@ -27,8 +27,13 @@ const generator = (_generator as any).default
 const chineseReg = /[^\x00-\xff]/ // 包括全角标点符号 ['注意啦，安全！', '是个']
 const fileTypeList = ['.tsx', '.ts']
 const FuncName = 't'
-const ImportStr = `import { useTranslation } from 'react-i18next'`
-const HooksStr = `const { t } = useTranslation()`
+const ImportStr = 'import { useTranslation } from "react-i18next"'
+const ImportStr_notHooks = 'import { t } from "i18next"'
+
+const HooksStr = 'const { t } = useTranslation()'
+// const NotHooksStr = 'const { t } = i18next'
+
+
 
 const ToTranslateFilePath = './locale/toTranslated.ts'
 const includesChinese = (str: string) => {
@@ -98,6 +103,11 @@ const getNewContent = (filePath: string) => {
         if (translated) {
           return
         }
+        // 非函数，不可用hooks，插入'import { t } from "i18next"'
+        const Flag_InFunction = isInFunction(path)
+        if (!Flag_InFunction) {
+          checkAndImport_TFuncOfI18next(path)
+        }
 
         if (parentPath.isJSXAttribute()) {
           path.replaceWith(t.jSXExpressionContainer(t.stringLiteral(node.value)))
@@ -115,7 +125,7 @@ const getNewContent = (filePath: string) => {
             // const expressions = [t.Identifier(node.value)]
             // const expressions = [t.stringLiteral(node.value)]
             // path.replaceWith(t.templateLiteral(node))
-        path.replaceWith(t.templateLiteral(quasis, expressions))
+          path.replaceWith(t.templateLiteral(quasis, expressions))
         }
         else {
           path.replaceWithSourceString(`${FuncName}('${node.value}')`)
@@ -125,7 +135,13 @@ const getNewContent = (filePath: string) => {
     JSXText(path) {
       const {node} = path
       if (includesChinese(node.value)) {
-        path.replaceWith(t.jSXExpressionContainer(t.stringLiteral(node.value)))
+         // 非函数，不可用hooks，插入'import { t } from "i18next"'
+         const Flag_InFunction = isInFunction(path)
+         if (!Flag_InFunction) {
+           checkAndImport_TFuncOfI18next(path)
+         }
+        const replacedValue = node.value.replace(/(^\s+|\s+$)/g, '');
+        path.replaceWith(t.jSXExpressionContainer(t.stringLiteral(replacedValue)))
         // 错误处理：path.replaceWithSourceString(`{${FuncName}('${node.value}')}`)
         // jsxText处理后，如果是replaceWithSourceString，会处理成字符串"translate('11今日面试')"
         // 这样有两个问题
@@ -144,6 +160,11 @@ const getNewContent = (filePath: string) => {
         return includesChinese(raw)
       })
       if (hasChinese) {
+         // 非函数，不可用hooks，插入'import { t } from "i18next"'
+         const Flag_InFunction = isInFunction(path)
+         if (!Flag_InFunction) {
+           checkAndImport_TFuncOfI18next(path)
+         }
         const len = quasis.length
         const word:string[] = []
         const params:string[] = []
@@ -191,31 +212,31 @@ const getNewContent = (filePath: string) => {
         const callExpression = t.callExpression(callee, argumentList.length ? argumentList : [])
         path.replaceWith(callExpression)
       }
-          let countExpressions = 0;
-          quasis.forEach((node: { value: any; tail?: any }, index: number) => {
-            const { value: { raw }, tail, } = node
-            if (includesChinese(raw)) {
-              console.log(raw)
-              // const newCall = buildCallExpression(FuncName, raw)
-              const newCall = t.stringLiteral(raw) // 先转成字符串，然后走StringLiteral的visitor
-              expressions.splice(index + countExpressions, 0, newCall)
-              countExpressions++
-              node.value = {
-                raw: '',
-                cooked: '',
-              }
-              quasis.push(
-                  t.templateElement(
-                    {
-                        raw: '',
-                        cooked: '',
-                    },
-                    false,
-                  ),
-              );
-            }
-          })
-          quasis[quasis.length - 1].tail = true;
+          // let countExpressions = 0;
+          // quasis.forEach((node: { value: any; tail?: any }, index: number) => {
+          //   const { value: { raw }, tail, } = node
+          //   if (includesChinese(raw)) {
+          //     console.log(raw)
+          //     // const newCall = buildCallExpression(FuncName, raw)
+          //     const newCall = t.stringLiteral(raw) // 先转成字符串，然后走StringLiteral的visitor
+          //     expressions.splice(index + countExpressions, 0, newCall)
+          //     countExpressions++
+          //     node.value = {
+          //       raw: '',
+          //       cooked: '',
+          //     }
+          //     quasis.push(
+          //         t.templateElement(
+          //           {
+          //               raw: '',
+          //               cooked: '',
+          //           },
+          //           false,
+          //         ),
+          //     );
+          //   }
+          // })
+          // quasis[quasis.length - 1].tail = true;
     },
     ArrowFunctionExpression(path) {
     //   const parentFunctionPath = path.findParent(p => p.isArrowFunctionExpression() || p.isFunctionExpression())
@@ -272,8 +293,9 @@ const dealFile = (filePath: string) => {
   
   const parentDir = path.dirname(filePath);
   const newFilePath = path.join(parentDir, newFileName);
-
-  if (fileTypeList.includes(path.extname(filePath))) {
+  const extend = path.extname(filePath)
+  if (fileTypeList.includes(extend)) {
+    // const Flag_canHooks = ['.tsx'].includes(extend)
     const newContent = getNewContent(filePath)
     // 写入新内容到文件
     fs.writeFile(newFilePath, newContent?.code || '', 'utf8', (writeErr) => {
@@ -309,8 +331,8 @@ async function readFilesInDirectory(directoryPath: string) {
 // const result = getNewContent(file)
 const replaceChinese = () => {
     const root = process.cwd();
-    const filePath = `${root}/src/test/index.tsx`
+    const filePath = `${root}/src/test` // /index.tsx
     readFilesInDirectory(filePath)
 }
-// replaceChinese() // test
+replaceChinese() // test
 export default replaceChinese

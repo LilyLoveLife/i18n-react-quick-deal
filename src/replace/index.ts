@@ -6,7 +6,7 @@
 import babel from '@babel/core'
 // import _template from '@babel/template'
 import t, { Statement, ImportDeclaration, TemplateLiteral, BlockStatement, ObjectProperty, Expression, TSType, V8IntrinsicIdentifier } from '@babel/types' //GeneratorResult , StringLiteral
-import {validTopFunctionPath, isInFunction, getTopPath, checkAndImport_TFuncOfI18next} from '../utils.js'
+import {isTopFunction, isInFunction, check_insertImport_withoutHook, check_insertExposeHook, isCustomReactHookFunc,isReactFuncComp} from '../utils.js'
 
 import _traverse, {Node, NodePath, } from '@babel/traverse'
 import fs from 'fs'
@@ -30,7 +30,7 @@ const FuncName = 't'
 const ImportStr = 'import { useTranslation } from "react-i18next"'
 const ImportStr_notHooks = 'import { t } from "i18next"'
 
-const HooksStr = 'const { t } = useTranslation()'
+const exposeHookFunc_codeStr = 'const { t } = useTranslation()'
 // const NotHooksStr = 'const { t } = i18next'
 
 
@@ -103,11 +103,8 @@ const getNewContent = (filePath: string) => {
         if (translated) {
           return
         }
-        // 非函数，不可用hooks，插入'import { t } from "i18next"'
-        const Flag_InFunction = isInFunction(path)
-        if (!Flag_InFunction) {
-          checkAndImport_TFuncOfI18next(path)
-        }
+        // 不可用hooks，插入'import { t } from "i18next"'
+        check_insertImport_withoutHook(path)
 
         if (parentPath.isJSXAttribute()) {
           path.replaceWith(t.jSXExpressionContainer(t.stringLiteral(node.value)))
@@ -135,11 +132,8 @@ const getNewContent = (filePath: string) => {
     JSXText(path) {
       const {node} = path
       if (includesChinese(node.value)) {
-         // 非函数，不可用hooks，插入'import { t } from "i18next"'
-         const Flag_InFunction = isInFunction(path)
-         if (!Flag_InFunction) {
-           checkAndImport_TFuncOfI18next(path)
-         }
+         // 不可用hooks，插入'import { t } from "i18next"'
+         check_insertImport_withoutHook(path)
         const replacedValue = node.value.replace(/(^\s+|\s+$)/g, '');
         path.replaceWith(t.jSXExpressionContainer(t.stringLiteral(replacedValue)))
         // 错误处理：path.replaceWithSourceString(`{${FuncName}('${node.value}')}`)
@@ -160,11 +154,10 @@ const getNewContent = (filePath: string) => {
         return includesChinese(raw)
       })
       if (hasChinese) {
-         // 非函数，不可用hooks，插入'import { t } from "i18next"'
-         const Flag_InFunction = isInFunction(path)
-         if (!Flag_InFunction) {
-           checkAndImport_TFuncOfI18next(path)
-         }
+        // 不可用hooks，插入'import { t } from "i18next"'
+        check_insertImport_withoutHook(path)
+
+
         const len = quasis.length
         const word:string[] = []
         const params:string[] = []
@@ -239,48 +232,41 @@ const getNewContent = (filePath: string) => {
           // quasis[quasis.length - 1].tail = true;
     },
     ArrowFunctionExpression(path) {
+      check_insertExposeHook(path)
     //   const parentFunctionPath = path.findParent(p => p.isArrowFunctionExpression() || p.isFunctionExpression())
-      const isTopFunctionPath = validTopFunctionPath(path)
-      if (isTopFunctionPath) {
-        const { parent } = path
-        console.log("找到最外层的函数:", path.node) // , path.node.argument
-        const hooksAst = template.ast`${HooksStr}` as Statement
-        const body = path.node.body
-        if (body.type === 'BlockStatement') {
-            (path.node.body as BlockStatement)?.body?.unshift(hooksAst)
-        }
+      // const isTopFunctionPath = isTopFunction(path)
+      // if (isTopFunctionPath) {
+      //   const { parent } = path
+      //   console.log("找到最外层的函数:", path.node) // , path.node.argument
+      //   const hooksAst = template.ast`${exposeHookFunc_codeStr}` as Statement
+      //   const body = path.node.body
+      //   if (body.type === 'BlockStatement') {
+      //       (path.node.body as BlockStatement)?.body?.unshift(hooksAst)
+      //   }
         // 其他：type是Expression（BinaryExpression）  走StringLiteral
         // type Expression = ArrayExpression | AssignmentExpression | BinaryExpression | CallExpression | ConditionalExpression | FunctionExpression | Identifier | StringLiteral | NumericLiteral | NullLiteral | BooleanLiteral | RegExpLiteral | LogicalExpression | MemberExpression ....
-      }
+        // 例如：const func = () => true ? 1 : 2
+      // }
     },
     FunctionExpression(path) {
-    //   const parentFunctionPath = path.findParent(p => p.isArrowFunctionExpression() || p.isFunctionExpression())
-      const isTopFunctionPath = validTopFunctionPath(path)
-      if (!isTopFunctionPath) {
-        const { parent } = path
-        // console.log("找到最外层的函数:", path.node) // , path.node.argument
-        const hooksAst = template.ast`${HooksStr}`
-        path.node.body.body.unshift(hooksAst as Statement)
-      }
+      check_insertExposeHook(path)
+      // const isTopFunctionPath = isTopFunction(path)
+      // if (!isTopFunctionPath) {
+      //   const { parent } = path
+      //   // console.log("找到最外层的函数:", path.node) // , path.node.argument
+      //   const hooksAst = template.ast`${exposeHookFunc_codeStr}`
+      //   path.node.body.body.unshift(hooksAst as Statement)
+      // }
     },
-    // ReturnStatement(path) {
-    //   const parentFunctionPath = path.findParent(p => p.isArrowFunctionExpression() || p.isFunctionExpression())
-    //   if (parentFunctionPath === path.getFunctionParent()) {
-    //     console.log("找到最外层的 return:") // , path.node.argument
-    //     const { parent } = path
-    //     const hooksAst = template.ast`${HooksStr}`
-    //     parent.body.unshift(hooksAst)
-    //   }
-
-    //   // const { parent } = path
-    //   // const { body } = parent
-    //   // const hooksAst = template.ast `${HooksStr}`
-    //   // body.unshift(hooksAst)
-    //   // todo ?????? 
-    //   // body.unshift(
-    //   //   babelParser.parse('const { t } = useTranslation()').program.body[0],
-    //   // );
-    // }
+    FunctionDeclaration(path) {
+      check_insertExposeHook(path)
+      // const isTopFunctionPath = isTopFunction(path)
+      // if (!isTopFunctionPath) {
+      //   const { parent } = path
+      //   const hooksAst = template.ast`${exposeHookFunc_codeStr}`
+      //   path.node.body.body.unshift(hooksAst as Statement)
+      // }
+    },
   })
   const res = generator(ast, {jsescOption: {minimal: true}})
   return res

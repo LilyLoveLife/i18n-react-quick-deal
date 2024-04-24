@@ -1,3 +1,3 @@
 #!/usr/bin/env node
-declare const replaceChinese: () => void;
+declare const replaceChinese: () => Promise<void>;
 export default replaceChinese;

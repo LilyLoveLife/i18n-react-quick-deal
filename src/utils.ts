@@ -3,12 +3,16 @@ import t, { Program, ImportDeclaration, FunctionDeclaration, ArrowFunctionExpres
 import babel from '@babel/core'
 import fs from 'fs'
 import path from 'path'
+// import _traverse from '@babel/traverse'
 import _generator from '@babel/generator'
 import {Statement} from '@babel/types'
+
 const template = babel.template
 const generator = (_generator as any).default
+const traverse = babel.traverse
 
-const ImportStr_notHooks = 'import i18next from "i18next"'
+// const ImportStr_notHooks = 'import i18next from "i18next"'
+const ImportStr_notHooks = 'import { t } from "i18next"'
 const NotHooksStr = 'const { t } = i18next'
 const exposeHookFunc_codeStr = 'const { t } = useTranslation()'
 
@@ -44,10 +48,75 @@ export const getTopPath = (path: NodePath) => {
 // }
 export const getAllImport = (path: NodePath) => {
   const programPath = getTopPath(path)
-  const importList = programPath?.node.body.filter((item: { type: string })=> item.type === 'ImportDeclaration') as ImportDeclaration[]
+  const importList = programPath?.node.body.filter((item)=> item.type === 'ImportDeclaration') as ImportDeclaration[]
   return importList
 }
-// 检测并插入非hook形式的import
+export const hasImport = (ast: any, source: string) => {
+  let hasImport = false;
+  traverse(ast, {
+    ImportDeclaration({ node }) {
+      const hasImportedFunc = node.specifiers.find((item) => {
+        if (item.type === 'ImportSpecifier') {
+          if (item.imported && item.imported.type === 'Identifier') {
+              return item.imported.name === 't'
+          }
+        }
+        return false
+      })
+      if (node.source.value !== source && hasImportedFunc) {
+        hasImport = true
+      }
+    },
+  });
+  return hasImport;
+}
+// import { t } from "i18next"
+export const hasImported_TFuncOfI18next =  (path: NodePath) => {
+  const importList:ImportDeclaration[] = getAllImport(path)
+  
+  return !!importList.find(item => {
+    const source = item.source.value === "i18next"
+    const imported = item.specifiers.find((item) => {
+      if (item.type === 'ImportSpecifier') {
+        if (item.imported && item.imported.type === 'Identifier') {
+            return item.imported.name === 't'
+        }
+      }
+      return false
+    })
+    return !!(source && imported)
+  })
+}
+export const checkAndImport_TFuncOfI18next = (path: NodePath) => {
+  const programPath = getTopPath(path)
+   const flag = hasImported_TFuncOfI18next(path)
+  if (!flag) {
+    const importList:ImportDeclaration[] = getAllImport(path)
+    const hasImported = importList.find(item => {
+      const source = item.source.value === "i18next"
+      const imported = item.specifiers.find((item) => {
+        if (item.type === 'ImportSpecifier') {
+          if (item.imported && item.imported.type === 'Identifier') {
+              return item.imported.name === 't'
+          }
+        }
+        return false
+      })
+      return !!(source && imported)
+    })
+    // 未曾导入
+    if (!hasImported) {
+      // todo: importAst1和importAst的区别？？？？？？？
+      const importAst1 = template.ast `${ImportStr_notHooks}`
+    //   const importAst2 = babel.template(`
+    //   import { t } from 'i18next';
+    // `)();
+    const importAst = template.ast `import { t } from 'i18next';`
+      programPath?.node.body.unshift(importAst as Statement);
+    }
+  }
+}
+// 检测并插入非hook形式的import： import { t } from "i18next"
 export const check_insertImport_withoutHook = (path: NodePath) => {
   const Flag_InFunction = isInFunction(path)
   if (!Flag_InFunction) {
@@ -94,6 +163,7 @@ export const hasInsert_ExposeHook = (path: NodePath) => {
     return body.find((each) => {
       if (t.isVariableDeclaration(each)) {
         const codeStr = generator(each, {jsescOption: {minimal: true}})
+        console.log('---hasInsert_ExposeHook--codeStr----', codeStr)
         return exposeHookFunc_codeStr === codeStr
       }
       return false
@@ -101,21 +171,7 @@ export const hasInsert_ExposeHook = (path: NodePath) => {
   }
   return false
 }
-export const hasImported_TFuncOfI18next =  (path: NodePath) => {
-  const importList:ImportDeclaration[] = getAllImport(path)
-  return !!importList.find(item => {
-    const source = item.source.value === 'i18next'
-    const importedHooks = item.specifiers.find((item) => {
-      if (item.type === 'ImportSpecifier') {
-        if (item.imported && item.imported.type === 'Identifier') {
-            return item.imported.name === 't'
-        }
-      }
-      return false
-    })
-    return !!(source && importedHooks)
-  })
-}
+
 export const isReactFuncComp = (path: NodePath) => {
   const {type, node} = path
   // 函数表达式：常规函数、箭头函数
@@ -152,14 +208,7 @@ export const isCustomReactHookFunc = (path: NodePath) => {
 export const isFunction = (path: NodePath) => {
   return t.isArrowFunctionExpression(path.node) || t.isFunctionExpression(path.node) || t.isFunctionDeclaration(path.node)
 }
-export const checkAndImport_TFuncOfI18next = (path: NodePath) => {
-  const programPath = getTopPath(path)
-  const flag = hasImported_TFuncOfI18next(path)
-  if (!flag) {
-    const importAst = template.ast `${ImportStr_notHooks}`
-    programPath?.node.body.unshift(importAst as Statement);
-  }
-}
+
 
 function startWithUpperLetter(str: string) {
   return /^[A-Z]/.test(str);
@@ -167,7 +216,9 @@ function startWithUpperLetter(str: string) {
 function startWithUse(str: string) {
   return str.substring(0, 'use'.length) === 'use'
 }
-
+export const getKey = (keyMap: Record<string, string>, chinesesStr: string) => {
+  return Object.keys(keyMap).find((key: string) => keyMap[key] === chinesesStr)
+}
 export const writeFileIfNotExists = (directoryPath: string, fileName: string, content: string) => {
    // 检查目录是否存在
    if (!fs.existsSync(directoryPath)) {

@@ -5,8 +5,8 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import babel from '@babel/core'
 // import _template from '@babel/template'
-import t, { Statement, ImportDeclaration, TemplateLiteral, BlockStatement, ObjectProperty, Expression, TSType, V8IntrinsicIdentifier } from '@babel/types' //GeneratorResult , StringLiteral
-import {isTopFunction, isInFunction, check_insertImport_withoutHook, check_insertExposeHook, isCustomReactHookFunc,isReactFuncComp} from '../utils.js'
+import t, { Statement, ImportDeclaration, TemplateLiteral, BlockStatement, ObjectProperty, Expression, TSType } from '@babel/types' // todo: TSType是什么？？？
+import {check_insertImport_withoutHook, check_insertExposeHook, getKey} from '../utils.js'
 
 import _traverse, {Node, NodePath, } from '@babel/traverse'
 import fs from 'fs'
@@ -29,7 +29,6 @@ const fileTypeList = ['.tsx', '.ts']
 const FuncName = 't'
 const ImportStr = 'import { useTranslation } from "react-i18next"'
 const ImportStr_notHooks = 'import { t } from "i18next"'
-
 const exposeHookFunc_codeStr = 'const { t } = useTranslation()'
 // const NotHooksStr = 'const { t } = i18next'
 
@@ -54,7 +53,7 @@ const toTranslateSet = new Set()
 // const addHook = (programNode) => {
 //   programNode.body
 // }
-const getNewContent = (filePath: string) => {
+const getNewContent = (filePath: string, keyMap: Record<string, string>) => {
   // 一种实现： babel.transformFileSync
   const {ast} = babel.transformFileSync(filePath, {
     sourceType: 'module',
@@ -94,6 +93,26 @@ const getNewContent = (filePath: string) => {
         node.body.unshift(importAst as Statement);
         // path.get('body').unshiftContainer(importAst)
       }
+
+      // not hooks
+      // const imported_notHooks = importList.find(item => {
+      //   const source = item.source.value === 'react-i18next' // react-i18next
+      //   const importedHooks = item.specifiers.find((item) => {
+      //     if (item.type === 'ImportSpecifier') {
+      //       //  排除StringLiteral（我也不知道为啥还会有StringLiteral）
+      //       //  eliminate type 'StringLiteral'（i don't know why has StringLiteral）
+      //       if (item.imported && item.imported.type === 'Identifier') {
+      //           return item.imported.name === 't'
+      //       }
+      //     }
+      //     return false
+      //   })
+      //   return source && importedHooks
+      // })
+      // if (!imported_notHooks) {
+      //   const importAst = template.ast `${ImportStr_notHooks}`
+      //   node.body.unshift(importAst as Statement);
+      // }
     },
     StringLiteral(path) {
       const { node, parentPath } = path
@@ -125,7 +144,9 @@ const getNewContent = (filePath: string) => {
           path.replaceWith(t.templateLiteral(quasis, expressions))
         }
         else {
-          path.replaceWithSourceString(`${FuncName}('${node.value}')`)
+          // path.replaceWithSourceString(`${FuncName}('${node.value}')`)
+          const key = getKey(keyMap,node.value) || node.value
+          path.replaceWithSourceString(`${FuncName}('${key}')`)
         }
       }
     },
@@ -134,8 +155,12 @@ const getNewContent = (filePath: string) => {
       if (includesChinese(node.value)) {
          // 不可用hooks，插入'import { t } from "i18next"'
          check_insertImport_withoutHook(path)
+        // <div>这是一个描述</div>转换成<div>{'这是一个描述'}</div>
+        // 从而走StringLiteral
         const replacedValue = node.value.replace(/(^\s+|\s+$)/g, '');
         path.replaceWith(t.jSXExpressionContainer(t.stringLiteral(replacedValue)))
+
+        // path.replaceWith(t.jSXExpressionContainer(t.stringLiteral(replacedValue)))
         // 错误处理：path.replaceWithSourceString(`{${FuncName}('${node.value}')}`)
         // jsxText处理后，如果是replaceWithSourceString，会处理成字符串"translate('11今日面试')"
         // 这样有两个问题
@@ -187,13 +212,15 @@ const getNewContent = (filePath: string) => {
         })
         const callee = t.identifier(FuncName)
         const argumentList = []
-        argumentList.push(t.stringLiteral(word.join('')))
+        const chineseStr = word.join('')
+        const keyForChinese = getKey(keyMap, chineseStr) || chineseStr
+        argumentList.push(t.stringLiteral(keyForChinese)) // key
         const properties: ObjectProperty[] = []
         paramKeys.forEach((paramKey, index) => {
-          console.log('---paramKey----', paramKey)
-          // t.cloneNode(expressions[index] as Expression, true)
-          if (t.isExpression(expressions[index])) {
+          console.log('---paramKey---params[index]-', paramKey, params[index])
+          if (paramKey && t.isExpression(expressions[index])) {
             const objectProperty = t.objectProperty(t.stringLiteral(paramKey), expressions[index] as Expression) // 不能是TSType
+            // const objectProperty = t.objectProperty(t.stringLiteral(paramKey), expressions[index] as Expression) // 不能是TSType
             properties.push(objectProperty)
           }
           // properties.push(t.objectProperty(t.stringLiteral(key), t.identifier(key)))
@@ -268,10 +295,35 @@ const getNewContent = (filePath: string) => {
       // }
     },
   })
+  // traverse(ast, {
+  //   ImportDeclaration(path) {
+  //     const importSpecifiersMap = new Map();
+  //     const source = path.node.source.value;
+  //     const specifiers = importSpecifiersMap.get(source) || [];
+ 
+  //     path.node.specifiers.forEach(specifier => {
+  //       const existingSpecifier = specifiers.find((s:any)=> {
+  //         console.log('----importFrom -----', s.local.name)
+  //         return t.isImportSpecifier(specifier) && s.local.name === specifier.local.name}
+  //       );
+  //       if (!existingSpecifier) {
+  //         specifiers.push(specifier);
+  //       }
+  //     });
+ 
+  //     importSpecifiersMap.set(source, specifiers);
+ 
+  //     if (specifiers.length === 0) {
+  //       path.remove();
+  //     } else {
+  //       path.node.specifiers = specifiers;
+  //     }
+  //   }
+  // })
   const res = generator(ast, {jsescOption: {minimal: true}})
   return res
 }
-const dealFile = (filePath: string) => {
+const dealFile = (filePath: string, keyMap: Record<string, string>) => {
   const fileName = path.basename(filePath);
   const fileName_without_extension = path.parse(filePath).name
   const extension = path.parse(filePath).ext
@@ -282,7 +334,7 @@ const dealFile = (filePath: string) => {
   const extend = path.extname(filePath)
   if (fileTypeList.includes(extend)) {
     // const Flag_canHooks = ['.tsx'].includes(extend)
-    const newContent = getNewContent(filePath)
+    const newContent = getNewContent(filePath, keyMap)
     // 写入新内容到文件
     fs.writeFile(newFilePath, newContent?.code || '', 'utf8', (writeErr) => {
       if (writeErr) {
@@ -294,18 +346,18 @@ const dealFile = (filePath: string) => {
     });
   }
 }
-async function readFilesInDirectory(directoryPath: string) {
+async function readFilesInDirectory(directoryPath: string, keyMap: Record<string, string>) {
   const stats = fs.statSync(directoryPath);
   if (stats.isFile()) {
     console.log('是一个文件');
-    dealFile(directoryPath)
+    dealFile(directoryPath, keyMap)
   } else {
     console.log('是一个目录');
     const files = fs.readdirSync(directoryPath);
  
     for (const childFile of files) {
       const childFilePath = path.join(directoryPath, childFile);
-      readFilesInDirectory(childFilePath)
+      readFilesInDirectory(childFilePath, keyMap)
     }
   }
 }
@@ -315,10 +367,15 @@ async function readFilesInDirectory(directoryPath: string) {
 
 // const file = path.join(__dirname, 'src/test/index.tsx');
 // const result = getNewContent(file)
-const replaceChinese = () => {
+const replaceChinese = async () => {
     const root = process.cwd();
     const filePath = `${root}/src/test` // /index.tsx
-    readFilesInDirectory(filePath)
+    const keyMapFilePath = `${root}/src/locale/keyChineseMap/index.js`
+    const module = await import(keyMapFilePath)
+      const keyMap = module.keyChineseMap
+      console.log('----keyMap-----', keyMap)
+      readFilesInDirectory(filePath, keyMap)
+    
 }
 replaceChinese() // test
 export default replaceChinese

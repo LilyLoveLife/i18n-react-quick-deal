@@ -8,8 +8,8 @@
     "lib"
   ],
   "bin": {
-    "i18n-react-extract": "./lib/extract",
-    "i18n-react-replace": "./lib/replace"
+    "i18n-react-extract": "./lib/extract/index.js",
+    "i18n-react-replace": "./lib/replace/index.js"
   },
   "scripts": {
     "build": "tsc",

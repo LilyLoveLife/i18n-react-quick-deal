@@ -150,7 +150,7 @@ const writeFile = async (jsonStr_toTraslate: string, directoryPath: string, file
 const extractChinese = () => {
     // const filePath = path.join(__dirname, FilePath_ToTranslate)
     const projectRoot = process.cwd()
-    const filePath = path.join(projectRoot, './src/test/index.ts');
+    const filePath = path.join(projectRoot, './src/test/index.tsx');
     console.log('-----filePath-----', filePath)
     traverseAllFiles(filePath)
     const jsonStr_toTraslate = JSON.stringify(Array.from(Set_ToTranslate))
@@ -194,6 +194,6 @@ const extractChinese = () => {
   
   
 }
-// extractChinese()
+extractChinese()
 export default extractChinese
 

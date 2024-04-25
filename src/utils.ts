@@ -1,5 +1,5 @@
 import { NodePath } from "@babel/core"
-import t, { Program, ImportDeclaration, FunctionDeclaration, ArrowFunctionExpression, FunctionExpression, BlockStatement} from '@babel/types' //GeneratorResult , StringLiteral
+import t, { Program, ImportDeclaration, FunctionDeclaration, ArrowFunctionExpression, FunctionExpression, BlockStatement, StringLiteral, VariableDeclarator, Identifier} from '@babel/types' //GeneratorResult , StringLiteral
 import babel from '@babel/core'
 import fs from 'fs'
 import path from 'path'
@@ -14,15 +14,16 @@ const traverse = babel.traverse
 // const ImportStr_notHooks = 'import i18next from "i18next"'
 const ImportStr_notHooks = 'import { t } from "i18next"'
 const NotHooksStr = 'const { t } = i18next'
-const exposeHookFunc_codeStr = 'const { t } = useTranslation()'
+const exposeHookFunc_codeStr = 'const {t} = useTranslation()'
 
 // path本身是一个函数节点
 export const isTopFunction = (path: NodePath) => {
    return isFunction(path)
           && !path.findParent(p => p.isArrowFunctionExpression() || p.isFunctionExpression())
 }
-export const getTopFunction = (path: NodePath) => {
-  const parentFunc = path.findParent(p => p.isArrowFunctionExpression() || p.isFunctionExpression())
+
+export const getTopFunctionPath = (path: NodePath) => {
+  const parentFunc = path.findParent(p => p.isArrowFunctionExpression() || p.isFunctionExpression() || p.isFunctionDeclaration())
   if (parentFunc) {
     return parentFunc
   }
@@ -89,7 +90,7 @@ export const hasImported_TFuncOfI18next =  (path: NodePath) => {
 }
 export const checkAndImport_TFuncOfI18next = (path: NodePath) => {
   const programPath = getTopPath(path)
-   const flag = hasImported_TFuncOfI18next(path)
+  const flag = hasImported_TFuncOfI18next(path)
   if (!flag) {
     const importList:ImportDeclaration[] = getAllImport(path)
     const hasImported = importList.find(item => {
@@ -107,7 +108,7 @@ export const checkAndImport_TFuncOfI18next = (path: NodePath) => {
     // 未曾导入
     if (!hasImported) {
       // todo: importAst1和importAst的区别？？？？？？？
-      const importAst1 = template.ast `${ImportStr_notHooks}`
+      // const importAst1 = template.ast `${ImportStr_notHooks}`
     //   const importAst2 = babel.template(`
     //   import { t } from 'i18next';
     // `)();
@@ -130,47 +131,130 @@ export const check_insertImport_withoutHook = (path: NodePath) => {
   }
 }
 export type TFunctionType = ArrowFunctionExpression | FunctionExpression | FunctionDeclaration
+
+type TCallExpressionArguments = t.Expression | t.SpreadElement | t.JSXNamespacedName | t.ArgumentPlaceholder
+export const getExposeHookNode = () => {
+  const id = t.objectPattern([
+    t.objectProperty(
+      t.identifier('t'),
+      t.identifier('t')
+    )
+  ])
+  const init = t.callExpression(t.identifier('useTranslation'), [])
+  const variableDeclarator = t.variableDeclarator(id, init);
+  return t.variableDeclaration('const', [variableDeclarator])
+}
 // 函数组件、自定义hook中：检测，暴露t函数 const { t } = useTranslation()
 export const check_insertExposeHook = (path: NodePath) => {
-  if (!isTopFunction(path)) return
-  if (isCustomReactHookFunc(path) && isReactFuncComp(path)) { 
+  // const Flag_InFunction = isInFunction(path)
+  // if (!Flag_InFunction) return
+  const topFuncPath = getTopFunctionPath(path)
+  if ((path.node as StringLiteral).value === 'abc ts文件2') {
+    console.log('---func name-----', ((topFuncPath?.parent as VariableDeclarator).id as Identifier).name)
+  }
+  if (!topFuncPath) return
+  // if (!isTopFunction(path)) return
+  if (isCustomReactHookFunc(topFuncPath) || isReactFuncComp(topFuncPath)) {
+    // if ((path.node as StringLiteral).value === 'abc ts文件2') {
+      console.log('---func name hooks-----', ((topFuncPath?.parent as VariableDeclarator).id as Identifier).name, hasInsert_ExposeHook(path))
+    // } 
     if (hasInsert_ExposeHook(path)) return // 已插入
-    const hooksAst = template.ast`${exposeHookFunc_codeStr}`;
+    // const hooksAst = template.ast`${exposeHookFunc_codeStr}`;
+    const hooksAst = template.ast `const {t} = useTranslation();`;
+    // const hooksAst = getExposeHookNode()
+    // const {ast} = babel.transformSync('const {t} = useTranslation();', {
+    //   sourceType: 'module',
+    //   parserOpts: {
+    //     plugins: ['jsx', 'typescript'],
+    //   },
+    //   ast: true,
+    // }) || {}
+    
+    // const hooksAst = ast?.program.body[0] as Statement
+    
     let body = null
-    if (t.isArrowFunctionExpression(path.node)) {
-        if (path.node.body.type === 'BlockStatement') {
-          body = (path.node.body as BlockStatement)?.body
+    if (t.isArrowFunctionExpression(topFuncPath.node)) {
+        if (topFuncPath.node.body.type === 'BlockStatement') {
+          body = (topFuncPath.node.body as BlockStatement)?.body
         } // else 走stringLiteral逻辑
     } else {
-      body = (path.node as FunctionExpression | FunctionDeclaration).body.body
+      body = (topFuncPath.node as FunctionExpression | FunctionDeclaration).body?.body
     }
     if (body) {
-      body.unshift(hooksAst  as Statement)
+      console.log('-----hooksAst-----', generator(hooksAst, {jsescOption: {minimal: true}, compact: true}))
+      hooksAst && body.unshift(hooksAst as Statement)
     }
   }
 }
 export const hasInsert_ExposeHook = (path: NodePath) => {
-  if (!isTopFunction(path)) return true // 非顶层函数，不能插入目标代码
-  let body = null
-  if (t.isArrowFunctionExpression(path.node)) {
-    if (t.isBlockStatement(path.node.body)) {
-      body = path.node.body.body
-    }
-  } else {
-    body = (path.node  as FunctionExpression | FunctionDeclaration).body.body
-  }
-  if (body) {
-    return body.find((each) => {
-      if (t.isVariableDeclaration(each)) {
-        const codeStr = generator(each, {jsescOption: {minimal: true}})
-        console.log('---hasInsert_ExposeHook--codeStr----', codeStr)
-        return exposeHookFunc_codeStr === codeStr
+  const topFuncPath = getTopFunctionPath(path)
+  if (!topFuncPath) return true
+  if (isCustomReactHookFunc(topFuncPath) || isReactFuncComp(topFuncPath)) { 
+    let body = null
+    if (t.isArrowFunctionExpression(topFuncPath.node)) {
+      if (t.isBlockStatement(topFuncPath.node.body)) {
+        body = topFuncPath.node.body.body
+        console.log('----body-------', body)
       }
-      return false
-    })
+    } else {
+      body = (topFuncPath.node  as FunctionExpression | FunctionDeclaration).body.body
+    }
+    console.log('----body-------', body)
+    const str  = generator(template.ast `const {t} = useTranslation()`, {jsescOption: {minimal: true}, compact: true})
+    if (body) {
+      return body.find((each) => {
+        if (t.isVariableDeclaration(each)) {
+          const codeStr = generator(each, {jsescOption: {minimal: true}, compact: true})
+          console.log('---hasInsert_ExposeHook--codeStr---exposeHookFunc_codeStr-', codeStr.code, str.code)
+          return codeStr.code === str.code
+        }
+        return false
+      })
+    }
   }
   return false
 }
+// // 函数组件、自定义hook中：检测，暴露t函数 const { t } = useTranslation()
+// export const check_insertExposeHook = (path: NodePath) => {
+//   if (!isTopFunction(path)) return
+//   if (isCustomReactHookFunc(path) && isReactFuncComp(path)) { 
+//     if (hasInsert_ExposeHook(path)) return // 已插入
+//     const hooksAst = template.ast`${exposeHookFunc_codeStr}`;
+//     let body = null
+//     if (t.isArrowFunctionExpression(path.node)) {
+//         if (path.node.body.type === 'BlockStatement') {
+//           body = (path.node.body as BlockStatement)?.body
+//         } // else 走stringLiteral逻辑
+//     } else {
+//       body = (path.node as FunctionExpression | FunctionDeclaration).body.body
+//     }
+//     if (body) {
+//       body.unshift(hooksAst  as Statement)
+//     }
+//   }
+// }
+// export const hasInsert_ExposeHook = (path: NodePath) => {
+//   if (!isTopFunction(path)) return true // 非顶层函数，不能插入目标代码
+//   let body = null
+//   if (t.isArrowFunctionExpression(path.node)) {
+//     if (t.isBlockStatement(path.node.body)) {
+//       body = path.node.body.body
+//     }
+//   } else {
+//     body = (path.node  as FunctionExpression | FunctionDeclaration).body.body
+//   }
+//   if (body) {
+//     return body.find((each) => {
+//       if (t.isVariableDeclaration(each)) {
+//         const codeStr = generator(each, {jsescOption: {minimal: true}})
+//         console.log('---hasInsert_ExposeHook--codeStr----', codeStr)
+//         return exposeHookFunc_codeStr === codeStr
+//       }
+//       return false
+//     })
+//   }
+//   return false
+// }
 
 export const isReactFuncComp = (path: NodePath) => {
   const {type, node} = path
@@ -179,6 +263,9 @@ export const isReactFuncComp = (path: NodePath) => {
     const {parent} = path
     if (parent.type === 'VariableDeclarator' && parent.id.type === 'Identifier') {
       const funcName = parent.id.name
+      if (startWithUpperLetter(funcName)) {
+        console.log('---isReactFuncComp-funcName-----', funcName)
+      }
       return startWithUpperLetter(funcName)
     }
   } else if (type === 'FunctionDeclaration') {
@@ -196,6 +283,10 @@ export const isCustomReactHookFunc = (path: NodePath) => {
     const {parent} = path
     if (parent.type === 'VariableDeclarator' && parent.id.type === 'Identifier') {
       const funcName = parent.id.name
+      if (startWithUse(funcName)) {
+        console.log('---isCustomReactHookFunc-funcName-----', funcName)
+      }
+      
       return startWithUse(funcName)
     }
   } else if (t.isFunctionDeclaration(path.node)) {

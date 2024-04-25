@@ -122,8 +122,11 @@ const getNewContent = (filePath: string, keyMap: Record<string, string>) => {
         if (translated) {
           return
         }
-        // 不可用hooks，插入'import { t } from "i18next"'
+        // 如果不可用hooks，插入'import { t } from "i18next"'
         check_insertImport_withoutHook(path)
+
+        // 如果可用hooks，顶层函数插入 const { t } = useTranslation();
+        check_insertExposeHook(path)
 
         if (parentPath.isJSXAttribute()) {
           path.replaceWith(t.jSXExpressionContainer(t.stringLiteral(node.value)))
@@ -153,8 +156,12 @@ const getNewContent = (filePath: string, keyMap: Record<string, string>) => {
     JSXText(path) {
       const {node} = path
       if (includesChinese(node.value)) {
-         // 不可用hooks，插入'import { t } from "i18next"'
-         check_insertImport_withoutHook(path)
+        // 如果不可用hooks，插入'import { t } from "i18next"'
+        check_insertImport_withoutHook(path)
+         
+        // 如果可用hooks，顶层函数插入 const { t } = useTranslation();
+        check_insertExposeHook(path)
+
         // <div>这是一个描述</div>转换成<div>{'这是一个描述'}</div>
         // 从而走StringLiteral
         const replacedValue = node.value.replace(/(^\s+|\s+$)/g, '');
@@ -179,8 +186,11 @@ const getNewContent = (filePath: string, keyMap: Record<string, string>) => {
         return includesChinese(raw)
       })
       if (hasChinese) {
-        // 不可用hooks，插入'import { t } from "i18next"'
+        // 如果不可用hooks，插入'import { t } from "i18next"'
         check_insertImport_withoutHook(path)
+
+        // 如果可用hooks，顶层函数插入 const { t } = useTranslation();
+        check_insertExposeHook(path)
 
 
         const len = quasis.length
@@ -259,7 +269,7 @@ const getNewContent = (filePath: string, keyMap: Record<string, string>) => {
           // quasis[quasis.length - 1].tail = true;
     },
     ArrowFunctionExpression(path) {
-      check_insertExposeHook(path)
+      // check_insertExposeHook(path)
     //   const parentFunctionPath = path.findParent(p => p.isArrowFunctionExpression() || p.isFunctionExpression())
       // const isTopFunctionPath = isTopFunction(path)
       // if (isTopFunctionPath) {
@@ -276,7 +286,7 @@ const getNewContent = (filePath: string, keyMap: Record<string, string>) => {
       // }
     },
     FunctionExpression(path) {
-      check_insertExposeHook(path)
+      // check_insertExposeHook(path)
       // const isTopFunctionPath = isTopFunction(path)
       // if (!isTopFunctionPath) {
       //   const { parent } = path
@@ -286,7 +296,7 @@ const getNewContent = (filePath: string, keyMap: Record<string, string>) => {
       // }
     },
     FunctionDeclaration(path) {
-      check_insertExposeHook(path)
+      // check_insertExposeHook(path)
       // const isTopFunctionPath = isTopFunction(path)
       // if (!isTopFunctionPath) {
       //   const { parent } = path

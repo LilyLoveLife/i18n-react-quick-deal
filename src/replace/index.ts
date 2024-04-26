@@ -6,7 +6,7 @@
 import babel from '@babel/core'
 // import _template from '@babel/template'
 import t, { Statement, ImportDeclaration, TemplateLiteral, BlockStatement, ObjectProperty, Expression, TSType } from '@babel/types' // todo: TSType是什么？？？
-import {check_insertImport_withoutHook, check_insertExposeHook, getKey} from '../utils.js'
+import {check_insertImport_withoutHook, check_insertExposeHook, getKey, shouldIgnore} from '../utils.js'
 
 import _traverse, {Node, NodePath, } from '@babel/traverse'
 import fs from 'fs'
@@ -93,30 +93,13 @@ const getNewContent = (filePath: string, keyMap: Record<string, string>) => {
         node.body.unshift(importAst as Statement);
         // path.get('body').unshiftContainer(importAst)
       }
-
-      // not hooks
-      // const imported_notHooks = importList.find(item => {
-      //   const source = item.source.value === 'react-i18next' // react-i18next
-      //   const importedHooks = item.specifiers.find((item) => {
-      //     if (item.type === 'ImportSpecifier') {
-      //       //  排除StringLiteral（我也不知道为啥还会有StringLiteral）
-      //       //  eliminate type 'StringLiteral'（i don't know why has StringLiteral）
-      //       if (item.imported && item.imported.type === 'Identifier') {
-      //           return item.imported.name === 't'
-      //       }
-      //     }
-      //     return false
-      //   })
-      //   return source && importedHooks
-      // })
-      // if (!imported_notHooks) {
-      //   const importAst = template.ast `${ImportStr_notHooks}`
-      //   node.body.unshift(importAst as Statement);
-      // }
     },
     StringLiteral(path) {
       const { node, parentPath } = path
       if (includesChinese(node.value)) {
+
+        if (shouldIgnore(path)) return
+
         const parentNode = parentPath?.node
         const translated = parentNode?.type === 'CallExpression' &&  parentNode?.callee.type === 'Identifier' && parentNode?.callee?.name === FuncName
         if (translated) {
@@ -156,6 +139,9 @@ const getNewContent = (filePath: string, keyMap: Record<string, string>) => {
     JSXText(path) {
       const {node} = path
       if (includesChinese(node.value)) {
+
+        if (shouldIgnore(path)) return
+
         // 如果不可用hooks，插入'import { t } from "i18next"'
         check_insertImport_withoutHook(path)
          
@@ -180,12 +166,16 @@ const getNewContent = (filePath: string, keyMap: Record<string, string>) => {
       }
     },
     TemplateLiteral(path) {
+      
+      if (shouldIgnore(path)) return
+
       const { expressions, quasis } = path.node
       const hasChinese = quasis.find((each) => {
         const { value: { raw }, tail, } = each
         return includesChinese(raw)
       })
       if (hasChinese) {
+        if (shouldIgnore(path)) return
         // 如果不可用hooks，插入'import { t } from "i18next"'
         check_insertImport_withoutHook(path)
 
@@ -305,31 +295,6 @@ const getNewContent = (filePath: string, keyMap: Record<string, string>) => {
       // }
     },
   })
-  // traverse(ast, {
-  //   ImportDeclaration(path) {
-  //     const importSpecifiersMap = new Map();
-  //     const source = path.node.source.value;
-  //     const specifiers = importSpecifiersMap.get(source) || [];
- 
-  //     path.node.specifiers.forEach(specifier => {
-  //       const existingSpecifier = specifiers.find((s:any)=> {
-  //         console.log('----importFrom -----', s.local.name)
-  //         return t.isImportSpecifier(specifier) && s.local.name === specifier.local.name}
-  //       );
-  //       if (!existingSpecifier) {
-  //         specifiers.push(specifier);
-  //       }
-  //     });
- 
-  //     importSpecifiersMap.set(source, specifiers);
- 
-  //     if (specifiers.length === 0) {
-  //       path.remove();
-  //     } else {
-  //       path.node.specifiers = specifiers;
-  //     }
-  //   }
-  // })
   const res = generator(ast, {jsescOption: {minimal: true}})
   return res
 }

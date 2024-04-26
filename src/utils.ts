@@ -16,6 +16,9 @@ const ImportStr_notHooks = 'import { t } from "i18next"'
 const NotHooksStr = 'const { t } = i18next'
 const exposeHookFunc_codeStr = 'const {t} = useTranslation()'
 
+export const shouldIgnore = (path: NodePath) => {
+  return path.node.leadingComments?.find(comment => comment.value.includes('i18n-ignore'))
+}
 // path本身是一个函数节点
 export const isTopFunction = (path: NodePath) => {
    return isFunction(path)

@@ -1,5 +1,6 @@
 import { NodePath } from "@babel/core";
 import t, { FunctionDeclaration, ArrowFunctionExpression, FunctionExpression } from '@babel/types';
+export declare const shouldIgnore: (path: NodePath) => t.Comment | undefined;
 export declare const isTopFunction: (path: NodePath) => boolean;
 export declare const getTopFunctionPath: (path: NodePath) => NodePath<t.Node> | undefined;
 export declare const isInFunction: (path: NodePath) => NodePath<t.Node> | null;

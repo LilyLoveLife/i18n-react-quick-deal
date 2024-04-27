@@ -206,7 +206,7 @@ const dealFile = (filePath: string, keyMap: Record<string, string>) => {
         console.error(writeErr);
         return writeErr
       }
-      console.log('文件内容已修改', filePath);
+      // console.log('文件内容已修改', filePath);
       return true
     });
   }
@@ -224,10 +224,21 @@ async function readFilesInDirectory(directoryPath: string, keyMap: Record<string
     }
   }
 }
+
 const replaceChinese = async () => {
     const root = process.cwd();
-    const filePath = `${root}/src/test`
-    const keyMapFilePath = `${root}/src/locale/keyChineseMap/index.js`
+    
+    const source = process.argv.find((arg) => arg.startsWith('--source='))?.split('=')[1];
+    const keymap = process.argv.find((arg) => arg.startsWith('--keymap='))?.split('=')[1];
+    
+    let filePath = `${root}/src/test`
+    if (source) {
+      filePath = path.join(`${root}`, source)
+    }
+    let keyMapFilePath = `${root}/src/locale/keyMap/index.js`
+    if (keymap) {
+      keyMapFilePath = path.join(`${root}`, keymap)
+    }
     const module = await import(keyMapFilePath)
     const keyMap = module.keyChineseMap
     readFilesInDirectory(filePath, keyMap)

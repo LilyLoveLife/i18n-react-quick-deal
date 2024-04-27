@@ -122,12 +122,20 @@ const writeFile = async (jsonStr_toTraslate: string, directoryPath: string, file
 }
 const extractChinese = () => {
     const projectRoot = process.cwd()
-    const filePath = path.join(projectRoot, './src/test');
+    let filePath = path.join(projectRoot, './src/test');
+    let destinateDirPath = path.join(projectRoot, `./src/locale/chinese/`);
+    const source = process.argv.find((arg) => arg.startsWith('--source='))?.split('=')[1];
+    const chinesedir = process.argv.find((arg) => arg.startsWith('--chinesedir='))?.split('=')[1];
+
+    if (source) {
+      filePath = path.join(`${projectRoot}`, source)
+    }
+    if (chinesedir) {
+      destinateDirPath = path.join(`${projectRoot}`, chinesedir)
+    }
     traverseAllFiles(filePath)
     const jsonStr_toTraslate = Array.from(Set_ToTranslate).join('\n')
-
-    const destinateDirPath = path.join(projectRoot, `./src/locale/toTranslate/`);
-    const destinateFileName = `${new Date().getTime()}.txt`
+    const destinateFileName = `${new Date().getTime()}.txt` //每次新文件名
     writeFile(jsonStr_toTraslate, destinateDirPath, destinateFileName)
 }
 extractChinese()

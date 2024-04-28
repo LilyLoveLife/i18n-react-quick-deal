@@ -86,6 +86,26 @@ Everytime you run, it will create a new file with `_translated` for each file.
 
 After you check the `_translated` file and make sure it's ok, you may use it to replace your origin file.
 
+The `_translated` file will be like this,
+
+```
+    return (
+        <div>{ t("name") }</div>
+        <div>/* i18n-ignore */姓名</div>
+        <div>{ t("common.address") }</div>
+        <div>{t("common.hello", {
+            "name": name
+        })}</div>
+        <div>
+            {
+                t("哦{{score}}分低于最低线{{lowerestScore}}", {
+                    "score": score,
+                    "lowerestScore": lowerestScore
+                })
+            }
+        </div>)
+```
+
 
 
 

@@ -91,6 +91,26 @@ npm install i18n-react-quick-deal
 
 如果你检查过这些生成的`_translated`文件，确认没有问题后，可以用它们替换你的原文件。
 
+生成的`_translated`文件中像这样：
+
+```
+    return (
+        <div>{ t("name") }</div>
+        <div>/* i18n-ignore */姓名</div>
+        <div>{ t("common.address") }</div>
+        <div>{t("common.hello", {
+            "name": name
+        })}</div>
+        <div>
+            {
+                t("哦{{score}}分低于最低线{{lowerestScore}}", {
+                    "score": score,
+                    "lowerestScore": lowerestScore
+                })
+            }
+        </div>)
+```
+
 
 
 

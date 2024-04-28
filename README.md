@@ -91,7 +91,7 @@ You can refer to `i18next`.
 
 这部分可以参考`i18next`。
 
-#### 4. Replace the chinese with
+#### 4. Replace the chinese with the key
  
 ```
     npm run replaceCh

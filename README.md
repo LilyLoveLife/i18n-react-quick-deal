@@ -1,4 +1,4 @@
-# i18n-react-quick-deal
+# i18n-react-quick-deal      [中文](./README_CHINESE.md)
 
 > Deal the react project quickly to improve the efficiency, especially for huge old project.
 > It mainly does two things for you: extract chinese and replace it with your prepared keymap.

@@ -75,7 +75,6 @@ const astTraverse = (filePath: string) => {
             }
           }
         })
-        console.log('---TemplateLiteral---', key.join(''))
         const chineseExpression = key.join('') // 你好，{{name}}
         if (!Set_ToTranslate.has(chineseExpression)) {
           Set_ToTranslate.add(chineseExpression)
@@ -85,13 +84,13 @@ const astTraverse = (filePath: string) => {
     })
   }
 const dealEachFile = (filePath: string) => {
-    const fileName = path.basename(filePath);
-    const fileName_without_extension = path.parse(filePath).name
-    const extension = path.parse(filePath).ext
-    const newFileName = `${fileName_without_extension}_translated${extension}`
+    // const fileName = path.basename(filePath);
+    // const fileName_without_extension = path.parse(filePath).name
+    // const extension = path.parse(filePath).ext
+    // const newFileName = `${fileName_without_extension}_translated${extension}`
     
-    const parentDir = path.dirname(filePath);
-    const newFilePath = path.join(parentDir, newFileName);
+    // const parentDir = path.dirname(filePath);
+    // const newFilePath = path.join(parentDir, newFileName);
   
     if (fileTypeList.includes(path.extname(filePath))) {
       astTraverse(filePath)
@@ -102,10 +101,8 @@ const dealEachFile = (filePath: string) => {
 async function traverseFilesInDirectory(directoryPath: string) {
     const stats = fs.statSync(directoryPath);
     if (stats.isFile()) {
-      console.log('是一个文件');
       dealEachFile(directoryPath)
     } else {
-      console.log('是一个目录');
       const files = fs.readdirSync(directoryPath);
    
       for (const childFile of files) {

@@ -5,7 +5,7 @@ import fs from 'fs'
 import path from 'path'
 import _generator from '@babel/generator'
 import {Statement} from '@babel/types'
-
+import chalk from 'chalk'
 const template = babel.template
 const generator = (_generator as any).default
 const traverse = babel.traverse
@@ -288,17 +288,25 @@ export const getKey = (keyMap: Record<string, string>, chinesesStr: string) => {
   return Object.keys(keyMap).find((key: string) => keyMap[key] === chinesesStr)
 }
 export const writeFileIfNotExists = (directoryPath: string, fileName: string, content: string) => {
-   // 检查目录是否存在
-   if (!fs.existsSync(directoryPath)) {
-     fs.mkdirSync(directoryPath, { recursive: true }); // 如果不存在，创建目录
-   }
-  
-   const filePath = `${directoryPath}/${fileName}`
-  
-   // 检查文件是否存在
-   if (!fs.existsSync(filePath)) {
-     fs.writeFileSync(filePath, content); // 如果不存在，创建并写入文件
-   } else {
-     fs.writeFileSync(filePath, content); // 如果存在，写入内容
-   }
+  try {
+    const stats = fs.statSync(directoryPath);
+    // 检查目录是否存在
+    if (!stats.isDirectory()) {
+      console.log(chalk.green('创建目录：'), directoryPath)
+      fs.mkdirSync(directoryPath, { recursive: true }); // 如果不存在，创建目录
+    }
+    
+    const filePath = `${directoryPath}/${fileName}`
+    
+    // 检查文件是否存在
+    if (!stats.isFile()) {
+      console.log(chalk.green('写入新文件'), filePath)
+      fs.writeFileSync(filePath, content); // 如果不存在，创建并写入文件
+    } else {
+      console.log(chalk.green('写入文件'), filePath)
+      fs.writeFileSync(filePath, content); // 如果存在，写入内容
+    }
+  } catch (err) {
+    console.log(err)
+  }
 }

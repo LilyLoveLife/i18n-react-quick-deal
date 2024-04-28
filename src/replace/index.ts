@@ -2,6 +2,7 @@
  
 import babel from '@babel/core'
 import t, {TemplateLiteral, ObjectProperty, Expression, TSType } from '@babel/types'
+import chalk from 'chalk'
 import {
   hasTranslated,
   dealWithImport,
@@ -40,31 +41,7 @@ const getNewContent = (filePath: string, keyMap: Record<string, string>) => {
   if (!ast) {
     return
   }
-  // 引入 import { useTranslation } from 'react-i18next';
-  // const { t } = useTranslation();
   traverse(ast, {
-    // Program({node}) {
-    //   const importList = node.body.filter((item: { type: string })=> item.type === 'ImportDeclaration') as ImportDeclaration[]
-
-    //   const imported = importList.find(item => {
-    //     const source = item.source.value === 'react-i18next' // react-i18next
-    //     const importedHooks = item.specifiers.find((item) => {
-    //       if (item.type === 'ImportSpecifier') {
-    //         //  排除StringLiteral（我也不知道为啥还会有StringLiteral）
-    //         //  eliminate type 'StringLiteral'（i don't know why has StringLiteral）
-    //         if (item.imported && item.imported.type === 'Identifier') {
-    //             return item.imported.name === 'useTranslation'
-    //         }
-    //       }
-    //       return false
-    //     })
-    //     return source && importedHooks
-    //   })
-    //   if (!imported) {
-    //     const importAst = template.ast `${ImportStr}`
-    //     node.body.unshift(importAst as Statement);
-    //   }
-    // },
     StringLiteral(path) {
       const { node, parentPath } = path
       if (includesChinese(node.value)) {
@@ -72,11 +49,7 @@ const getNewContent = (filePath: string, keyMap: Record<string, string>) => {
         if (shouldIgnore(path)) return
 
         if (hasTranslated(path, 't')) return
-        // const parentNode = parentPath?.node
-        // const translated = parentNode?.type === 'CallExpression' &&  parentNode?.callee.type === 'Identifier' && parentNode?.callee?.name === FuncName
-        // if (translated) {
-        //   return
-        // }
+
         // 插入导入语句
         dealWithImport(path)
 
@@ -193,7 +166,7 @@ const dealFile = (filePath: string, keyMap: Record<string, string>) => {
   const fileName = path.basename(filePath);
   const fileName_without_extension = path.parse(filePath).name
   const extension = path.parse(filePath).ext
-  const newFileName = `${fileName_without_extension}_translated${extension}`
+  const newFileName = `${fileName_without_extension}_translated_${new Date().getTime()}${extension}`
   
   const parentDir = path.dirname(filePath);
   const newFilePath = path.join(parentDir, newFileName);
@@ -206,23 +179,33 @@ const dealFile = (filePath: string, keyMap: Record<string, string>) => {
         console.error(writeErr);
         return writeErr
       }
-      // console.log('文件内容已修改', filePath);
+      console.log(chalk.green('已翻译'), filePath)
+      console.log(chalk.green('新文件'), newFilePath)
       return true
     });
   }
 }
 async function readFilesInDirectory(directoryPath: string, keyMap: Record<string, string>) {
-  const stats = fs.statSync(directoryPath);
-  if (stats.isFile()) {
-    dealFile(directoryPath, keyMap)
-  } else {
-    const files = fs.readdirSync(directoryPath);
- 
-    for (const childFile of files) {
-      const childFilePath = path.join(directoryPath, childFile);
-      readFilesInDirectory(childFilePath, keyMap)
+   try {
+      const stats = fs.statSync(directoryPath);
+      if (stats.isFile()) {
+        if (directoryPath.includes('_translated_')) {
+          return
+        }
+        dealFile(directoryPath, keyMap)
+      } else if (stats.isDirectory()){
+        const files = fs.readdirSync(directoryPath);
+    
+        for (const childFile of files) {
+          const childFilePath = path.join(directoryPath, childFile);
+          readFilesInDirectory(childFilePath, keyMap)
+        }
+      } else {
+        console.log(chalk.red('文件或目录不存在！'), directoryPath)
+      }
+    } catch (err) {
+      console.log(err)
     }
-  }
 }
 
 const replaceChinese = async () => {
@@ -231,7 +214,7 @@ const replaceChinese = async () => {
     const source = process.argv.find((arg) => arg.startsWith('--source='))?.split('=')[1];
     const keymap = process.argv.find((arg) => arg.startsWith('--keymap='))?.split('=')[1];
     
-    let filePath = `${root}/src/test`
+    let filePath = `${root}/src`
     if (source) {
       filePath = path.join(`${root}`, source)
     }

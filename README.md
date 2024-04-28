@@ -58,15 +58,14 @@ It will be like
 哦{{score}}分低于最低线{{lowerestScore}}
 
 ```
+👉 If you don't want to translate a word or expression, use `/* i18n-ignore */` just before it.
+
+
 从`--source`目录或文件中提取待翻译中文，写入文件夹`--chinesedir`中。
 
 每一次运行该命令，将会得到一个新的`.text` 文件。
 
-
-
-If you don't want to translate a word or expression, use `/* i18n-ignore */` just before it.
-
-如果你不想翻译某个单词或者表达式，可以使用 `/* i18n-ignore */`来忽略。
+👉 如果你不想翻译某个单词或者表达式，可以使用 `/* i18n-ignore */`来忽略。
 
 #### 3. Prepare the keyMap `.js` file
 You should get the Key-Chinese file prepared according to the former extracted chinese.
@@ -82,6 +81,7 @@ It should be like this
 For the Key `common.address` indicates the data structure, which means the attribute `address` of the object `common`.
 For the Value, you can also use placeholder as the value if the origin code has variable or expression.
 You can refer to `i18next`.
+
 
 根据提取出的待翻译中文，准备好你的key映射文件。 
 
@@ -104,7 +104,6 @@ Everytime you run, it will create a new file with `_translated` for each file.
 
 After you check the `_translated` file and make sure it's ok, you may use it to replace your origin file.
 
-中文：
 
 这个命令，首先它从`--source`这个文件夹或者文件中的中文全部替换为key值。
 

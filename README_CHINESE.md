@@ -17,17 +17,17 @@ npm install i18n-react-quick-deal
 #### 1. 在你的项目中配置package.json文件
 ```
    "scripts": {
-        "extractCh": "i18n-react-extract --source=./src/test --chinesedir=./src/locale/chinese",
-        "replaceCh": "i18n-react-replace --source=./src/test --keymap=./src/locale/keyMap/index.js ",
+        "extractCh": "i18n-react-extract --source=./src --chinesedir=./src/locale/chinese",
+        "replaceCh": "i18n-react-replace --source=./src --keymap=./src/locale/keyMap/index.js ",
    }
 ```
 当然，你可以配置自己想要的路径参数。
 
-`--source`表示待翻译的目录或文件路径。
+`--source`表示待翻译的目录或文件路径，默认值 --source=./src
 
-`--chinesedir`表示抽取出的中文存放目录。
+`--chinesedir`表示抽取出的中文存放目录，默认值 --chinesedir=./src/locale/chinese
 
-`--keymap`表示你准备好的Key-中文的映射文件存放目录。
+`--keymap`表示你准备好的Key-中文的映射文件存放目录，默认值 --keymap=./src/locale/keyMap/index.js
 
 #### 2. 提取待翻译中文
 
@@ -49,6 +49,12 @@ npm install i18n-react-quick-deal
 ```
 
 👉 如果你不想翻译某个单词或者表达式，可以使用 `/* i18n-ignore */`来忽略。
+
+例如：
+
+```
+    <Input placeholder={/* i18n-ignore */`请输入你的姓名：${PageSize}`} />
+```
 
 #### 3.准备keyMap（键值-中文）映射文件，`.js`格式
 

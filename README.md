@@ -18,17 +18,17 @@ npm install i18n-react-quick-deal
 #### 1. Config in your project, package.json
 ```
    "scripts": {
-        "extractCh": "i18n-react-extract --source=./src/test --chinesedir=./src/locale/chinese",
-        "replaceCh": "i18n-react-replace --source=./src/test --keymap=./src/locale/keyMap/index.js ",
+        "extractCh": "i18n-react-extract --source=./src --chinesedir=./src/locale/chinese",
+        "replaceCh": "i18n-react-replace --source=./src --keymap=./src/locale/keyMap/index.js ",
    }
 ```
 Certainly you can configure your own path parameters。
 
-`--source` indicates the dir or file for translating.
+`--source` indicates the dir or file for translating, default --source=./src
 
-`--chinesedir` indicates the extracted Chinese directory.
+`--chinesedir` indicates the extracted Chinese directory, default --chinesedir=./src/locale/chinese
 
-`--keymap` indicates the directory where the key Key-Chinese mapping file is stored.
+`--keymap` indicates the directory where the key Key-Chinese mapping file is stored, default --keymap=./src/locale/keyMap/index.js
 
 
 #### 2. Extract chinese for translating
@@ -49,6 +49,12 @@ It will be like
 
 ```
 👉 If you don't want to translate a word or expression, use `/* i18n-ignore */` just before it.
+
+For example,
+
+```
+    <Input placeholder={/* i18n-ignore */`请输入你的姓名：${PageSize}`} />
+```
 
 
 #### 3. Prepare the keyMap `.js` file

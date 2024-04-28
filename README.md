@@ -7,8 +7,9 @@
 👉 It is based on `i18next` and `react-i18next`.
 
    So it is only for project by React, and you should internationalize your project based on `i18next`
-
+   
    国际化方案基于`i18next` 和 `react-i18next`。
+   
    所以，仅可用于React项目，并且，你应该使用`i18next`来实现你项目的国际化。
 
 ## Install

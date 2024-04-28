@@ -34,8 +34,11 @@ Certainly you can configure your own path parameters。
 `--keymap` indicates the directory where the key Key-Chinese mapping file is stored.
 
 当然，你可以配置自己想要的路径参数。
+
 `--source`表示待翻译的目录或文件路径。
+
 `--chinesedir`表示抽取出的中文存放目录。
+
 `--keymap`表示你准备好的Key-中文的映射文件存放目录。
 
 #### 2. Extract chinese for translating

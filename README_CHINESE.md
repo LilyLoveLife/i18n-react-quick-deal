@@ -1,4 +1,4 @@
-# i18n-react-quick-deal
+# i18n-react-quick-deal        [English](./README.md)
 
 > 快速处理react项目的国际化以提高效率，特别对于历史存在的大体量项目
 > 它主要做了两件事：提取待翻译中文，替换待翻译中文

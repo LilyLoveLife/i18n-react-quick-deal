@@ -1,6 +1,6 @@
 {
   "name": "i18n-react-quick-deal",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Deal i18n for react project quickly",
   "type": "module",
   "files": [
@@ -21,7 +21,12 @@
   },
   "keywords": [
     "i18",
-    "react"
+    "i18next",
+    "react-i18next",
+    "react",
+    "extract Chinese",
+    "replace Chinese",
+    "quick"
   ],
   "author": "Lily",
   "license": "ISC",

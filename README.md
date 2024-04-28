@@ -1,16 +1,19 @@
 # react-customized
 
 > Deal the react project quickly to improve the efficiency, especially for huge old project.
-== It is based on `i18next` and `react-i18next`. ==
-== So it is only for project by React, and you should internationalize your project based on i18next ==
 
-Install from the [npm registry](https://www.npmjs.com/) with your package manager:
+
+👉 It is based on `i18next` and `react-i18next`.
+
+👉 So it is only for project by React, and you should internationalize your project based on i18next
+
+## Install
 ```bash
 npm install i18n-react-quick-deal
 ```
 ## Usage
 
-### Config in your project, package.json
+#### 1. Config in your project, package.json
 ```
    "scripts": {
         "extractCh": "i18n-react-extract --source=./src/test --chinesedir=./src/locale/chinese",
@@ -18,7 +21,7 @@ npm install i18n-react-quick-deal
    }
 ```
 
-### Extract chinese for translating
+#### 2. Extract chinese for translating
 
 ```
     npm run extractCh
@@ -34,7 +37,7 @@ It will be like
 
 ```
 
-### Replace the chinese with
+#### 3. Replace the chinese with
 You should get the keyMap file prepared according to the former extracted chinese.
 It should be like this
 ```
@@ -47,7 +50,7 @@ It should be like this
 ```
 `common.address` indicates the data structure, which means the attribute `address` of the object `common`
 
-### Replace the chinese with
+#### 4. Replace the chinese with
  
 ```
     npm run replaceCh

@@ -1,11 +1,12 @@
 # react-customized
 
 > Deal the react project quickly to improve the efficiency, especially for huge old project.
+> It mainly does two things for you: extract chinese and replace it with your prepared keymap.
 
 
 👉 It is based on `i18next` and `react-i18next`.
 
-👉 So it is only for project by React, and you should internationalize your project based on i18next
+   So it is only for project by React, and you should internationalize your project based on i18next
 
 ## Install
 ```bash

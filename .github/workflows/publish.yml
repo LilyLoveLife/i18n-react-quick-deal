@@ -37,12 +37,12 @@ jobs:
       - name: 合并版本
         uses: changesets/action@v1
         with:
-          version: npx changesets version
+          version: changeset version
           # version: npm ci:version ---npm scripts in package.json
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
       - name: 发布
-        run: npx changeset publish
+        run: changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}

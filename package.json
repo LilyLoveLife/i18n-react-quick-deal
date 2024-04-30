@@ -26,6 +26,7 @@
     "react",
     "extract Chinese",
     "replace Chinese",
+    "translate",
     "quick"
   ],
   "author": "Lily",

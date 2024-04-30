@@ -35,6 +35,8 @@ jobs:
         run: npm run build      
       - name: 合并版本
         uses: changesets/action@v1
+        with:
+          version: changeset version
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
           # NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -39,12 +39,15 @@ jobs:
       - name: 合并版本,发布
         uses: changesets/action@v1
         with:
-          version: pnpm ci:version
-          commit: "chore: update versions"
-          title: "chore: update versions"
-          publish: pnpm ci:publish
+          version: npm ci:version
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          # commit: "chore: update versions"
+          # title: "chore: update versions"
+          # publish: pnpm ci:publish
+      - name: 发布
+        run: npx changeset publish
+        env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_ACCESS_TOKEN}}
       # - name: 发布
       #   run: |

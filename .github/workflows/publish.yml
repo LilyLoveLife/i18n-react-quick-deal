@@ -57,6 +57,7 @@ jobs:
         uses: changesets/action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: 发布
         run: npm publish
         env:

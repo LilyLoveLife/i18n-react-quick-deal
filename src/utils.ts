@@ -8,7 +8,6 @@ import {Statement} from '@babel/types'
 import chalk from 'chalk'
 const template = babel.template
 const generator = (_generator as any).default
-const traverse = babel.traverse
 
 const ImportStr_notHooks = 'import { t } from "i18next"'
 const NotHooksStr = 'const { t } = i18next'

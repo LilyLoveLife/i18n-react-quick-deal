@@ -17,9 +17,9 @@ jobs:
         npm-version: [8]
     steps:
       - name: 拉取 github 仓库代码
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: 设定 node 环境
-        uses: actions/setup-node@master
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           # 设置发包 npm 地址仓库
@@ -37,12 +37,12 @@ jobs:
       - name: 合并版本
         uses: changesets/action@v1
         with:
-          version: changeset version
+          version: npm changeset version
           # version: npm ci:version ---npm scripts in package.json
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
       - name: 发布
-        run: changeset publish
+        run: npm changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}

@@ -34,25 +34,6 @@ jobs:
       # 执行构建步骤
       - name: 构建
         run: npm run build      
-      # - name: 合并版本
-      #   uses: changesets/action@v1
-      #   # with:
-      #   #   version: changeset version
-      #     # version: npm ci:version ---npm scripts in package.json
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
-      # - name: 发布
-      #   run: npm publish
-
-      # - name: 合并版本，发布
-      #   # run: npx changeset publish
-      #   uses: changesets/action@v1
-      #   with:
-      #     publish: npm publish
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
-      #     NPM_TOKEN: ${{secrets.NPM_TOKEN}}
-
       - name: 合并版本
         uses: changesets/action@v1
         env:
@@ -65,21 +46,21 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
           # NPM_TOKEN: ${{secrets.NPM_TOKEN}}
 
-      # - name: 读取当前版本号
-      #   id: version
-      #   uses: ashley-taylor/read-json-property-action@v1.0
-      #   with:
-      #     path: ./package.json
-      #     property: version
-      # - name: 创建GitHub Release
-      #   id: create_release
-      #   # uses: actions/create-release@latest ---unmaintained
-      #   uses: softprops/action-gh-release@v2
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
-      #   with:
-      #     tag_name: v${{steps.version.outputs.value}}
-      #     # release_name, default to tag_name
-      #     name: v${{steps.version.outputs.value}}
-      #     draft: false
-      #     prerelease: false
+      - name: 读取当前版本号
+        id: version
+        uses: ashley-taylor/read-json-property-action@v1.0
+        with:
+          path: ./package.json
+          property: version
+      - name: 创建GitHub Release
+        id: create_release
+        # uses: actions/create-release@latest ---unmaintained
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+        with:
+          tag_name: v${{steps.version.outputs.value}}
+          # release_name, default to tag_name
+          name: v${{steps.version.outputs.value}}
+          draft: false
+          prerelease: false

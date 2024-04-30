@@ -53,7 +53,7 @@ jobs:
       #     GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
       #     NPM_TOKEN: ${{secrets.NPM_TOKEN}}
 
-       - name: 合并版本
+      - name: 合并版本
         uses: changesets/action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}

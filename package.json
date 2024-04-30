@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LilyLoveLife/i18n-react-deal.git"
+    "url": "git+https://github.com/LilyLoveLife/i18n-react-quick-deal.git"
   },
   "keywords": [
     "i18",
@@ -32,9 +32,9 @@
   "author": "Lily",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/LilyLoveLife/i18n-react-deal/issues"
+    "url": "https://github.com/LilyLoveLife/i18n-react-quick-deal/issues"
   },
-  "homepage": "https://github.com/LilyLoveLife/i18n-react-deal#readme",
+  "homepage": "https://github.com/LilyLoveLife/i18n-react-quick-deal#readme",
   "devDependencies": {
     "@types/babel__core": "^7.20.5",
     "@types/node": "^20.12.7"

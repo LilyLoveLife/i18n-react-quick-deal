@@ -42,7 +42,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
       - name: 发布
-        run: npx changeset publish
+        # run: npx changeset publish
+        uses: changesets/action@v1
+        with:
+          publish: npx changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}

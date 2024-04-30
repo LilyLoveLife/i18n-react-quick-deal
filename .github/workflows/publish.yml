@@ -1,0 +1,66 @@
+name: Publish npm
+
+# 触发工作流程的事件
+on:
+  push:
+    branches:
+      - main
+# 按顺序运行作业
+jobs:
+  publish-npm:
+    # 指定的运行器环境
+    runs-on: ubuntu-latest
+    # # 设置 node 版本
+    strategy:
+      matrix:
+        node-version: [16]
+        npm-version: [8]
+    steps:
+      - name: 拉取 github 仓库代码
+        uses: actions/checkout@v3
+      - name: 设定 node 环境
+        uses: actions/setup-node@master
+        with:
+          node-version: ${{ matrix.node-version }}
+          # 设置发包 npm 地址仓库
+          registry-url: https://registry.npmjs.org
+          # cache: 'npm'
+      # - name: 设定 npm 版本
+      #   uses: npm/action-setup@v2
+      #   with:
+      #     version: ${{ matrix.npm-version }}
+      - name: 安装依赖
+        run: npm install
+      # 执行构建步骤
+      - name: 构建
+        run: npm run build      
+      - name: 合并版本
+        uses: changesets/action@v1
+        with:
+          version: npx changesets version
+          # version: npm ci:version ---npm scripts in package.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+      - name: 发布
+        run: npx changeset publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+      - name: 读取当前版本号
+        id: version
+        uses: ashley-taylor/read-json-property-action@v1.0
+        with:
+          path: ./package.json
+          property: version
+      - name: 创建GitHub Release
+        id: create_release
+        # uses: actions/create-release@latest ---unmaintained
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+        with:
+          tag_name: v${{steps.version.outputs.value}}
+          # release_name, default to tag_name
+          name: v${{steps.version.outputs.value}}
+          draft: false
+          prerelease: false

@@ -4,7 +4,7 @@ name: Publish npm
 on:
   push:
     branches:
-      - release
+      - main
 # 按顺序运行作业
 jobs:
   publish-npm:
@@ -14,54 +14,51 @@ jobs:
     strategy:
       matrix:
         node-version: [16]
-        pnpm-version: [8]
+        npm-version: [8]
     steps:
-      # 拉取 github 仓库代码
       - name: 拉取 github 仓库代码
         uses: actions/checkout@v3
-      # - uses: pnpm/action-setup@v2
-      #   with:
-      #     version: ${{ matrix.pnpm-version }}
-      # 设定 node 环境
-      - uses: actions/setup-node@master
+      - name: 设定 node 环境
+        uses: actions/setup-node@master
         with:
           node-version: ${{ matrix.node-version }}
           # 设置发包 npm 地址仓库
           registry-url: https://registry.npmjs.org
           # cache: 'npm'
-      # 安装依赖，相当于 npm ci
+      # - name: 设定 npm 版本
+      #   uses: npm/action-setup@v2
+      #   with:
+      #     version: ${{ matrix.npm-version }}
       - name: 安装依赖
         run: npm install
       # 执行构建步骤
       - name: 构建
         run: npm run build      
-      # 执行部署
-      - name: 合并版本,发布
+      - name: 合并版本
         uses: changesets/action@v1
         with:
-          version: npm ci:version
+          version: npx changesets version
+          # version: npm ci:version package.json中自定义发布脚本
         env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          # commit: "chore: update versions"
-          # title: "chore: update versions"
-          # publish: pnpm ci:publish
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
       - name: 发布
         run: npx changeset publish
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_ACCESS_TOKEN}}
-      # - name: 发布
-      #   run: |
-      #     echo $(pwd)
-      #     father_file="/home/runner/work/pink-flower-ui"
-      #     for dir1 in $(ls /home/runner/work/pink-flower-ui/pink-flower-ui)
-      #     do
-      #       [ -d $dir1 ] && echo $dir1
-      #     done
-      #     for dir in $(ls /home/runner/work/pink-flower-ui/pink-flower-ui/packages)
-      #     do
-      #       [ -d $dir ] && echo $dir
-      #     done
-      #     pnpm changeset publish
-      #   env:
-      #     # 设置的 NPM_TOKEN
-      #     NODE_AUTH_TOKEN: ${{secrets.NPM_ACCESS_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+          NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+      - name: 读取当前版本号
+        id: version
+        uses: ashley-taylor/read-json-property-action@v1.0
+        with:
+          path: ./package.json
+          property: version
+      - name: 创建GitHub Release
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+        with:
+          tag_name: v${{steps.version.outputs.value}}
+          release_name: v${{steps.version.outputs.value}}
+          draft: false
+          prerelease: false

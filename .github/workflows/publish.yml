@@ -46,22 +46,3 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
           # NPM_TOKEN: ${{secrets.NPM_TOKEN}}
-
-      # - name: 读取当前版本号
-      #   id: version
-      #   uses: ashley-taylor/read-json-property-action@v1.0
-      #   with:
-      #     path: ./package.json
-      #     property: version
-      # - name: 创建GitHub Release
-      #   id: create_release
-      #   # uses: actions/create-release@latest ---unmaintained
-      #   uses: softprops/action-gh-release@v2
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
-      #   with:
-      #     tag_name: v${{steps.version.outputs.value}}
-      #     # release_name, default to tag_name
-      #     name: v${{steps.version.outputs.value}}
-      #     draft: false
-      #     prerelease: false

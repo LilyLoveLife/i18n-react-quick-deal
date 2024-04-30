@@ -45,7 +45,7 @@ jobs:
         # run: npx changeset publish
         uses: changesets/action@v1
         with:
-          publish: npx changeset publish
+          publish: npm run publish
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}

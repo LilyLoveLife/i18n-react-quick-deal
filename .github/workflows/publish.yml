@@ -34,14 +34,14 @@ jobs:
       # 执行构建步骤
       - name: 构建
         run: npm run build      
-      - name: 合并版本
-        uses: changesets/action@v1
-        # with:
-        #   version: changeset version
-          # version: npm ci:version ---npm scripts in package.json
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
-      - name: 发布
+      # - name: 合并版本
+      #   uses: changesets/action@v1
+      #   # with:
+      #   #   version: changeset version
+      #     # version: npm ci:version ---npm scripts in package.json
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
+      - name: 合并版本，发布
         # run: npx changeset publish
         uses: changesets/action@v1
         with:

@@ -38,7 +38,7 @@ jobs:
         uses: changesets/action@v1
         with:
           version: npx changesets version
-          # version: npm ci:version package.json中自定义发布脚本
+          # version: npm ci:version ---npm scripts in package.json
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
       - name: 发布
@@ -54,11 +54,13 @@ jobs:
           property: version
       - name: 创建GitHub Release
         id: create_release
-        uses: actions/create-release@latest
+        # uses: actions/create-release@latest ---unmaintained
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
         with:
           tag_name: v${{steps.version.outputs.value}}
-          release_name: v${{steps.version.outputs.value}}
+          # release_name, default to tag_name
+          name: v${{steps.version.outputs.value}}
           draft: false
           prerelease: false

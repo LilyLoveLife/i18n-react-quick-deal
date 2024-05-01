@@ -24,6 +24,9 @@ jobs:
     steps:
       - name: 拉取 github 仓库代码
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
       - name: 设定 node 环境
         uses: actions/setup-node@v3
         with:
@@ -45,7 +48,8 @@ jobs:
           version: npx changeset version
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
-          # NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - name: 发布
         run: npm publish
         env:

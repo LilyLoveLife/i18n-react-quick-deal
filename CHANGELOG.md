@@ -1,5 +1,11 @@
 ## 1.0.5
 
+## 1.0.7
+
+### Patch Changes
+
+- 2b2ecf0: workflow
+
 ## 1.0.6
 
 ### Patch Changes

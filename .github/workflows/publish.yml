@@ -45,11 +45,12 @@ jobs:
       - name: 合并版本，发布
         uses: changesets/action@v1
         with:
-          version: npx changeset version
+          # version: npx changeset version
           publish: npx changeset publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN}}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
           # NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
       # - name: 发布
       #   run: npm publish

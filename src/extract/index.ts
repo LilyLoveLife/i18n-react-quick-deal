@@ -119,7 +119,7 @@ const writeFile = async (jsonStr_toTraslate: string, directoryPath: string, file
 }
 const extractChinese = () => {
     const projectRoot = process.cwd()
-    let filePath = path.join(projectRoot, './src/test');
+    let filePath = path.join(projectRoot, './src');
     let destinateDirPath = path.join(projectRoot, `./src/locale/chinese/`);
     const source = process.argv.find((arg) => arg.startsWith('--source='))?.split('=')[1];
     const chinesedir = process.argv.find((arg) => arg.startsWith('--chinesedir='))?.split('=')[1];

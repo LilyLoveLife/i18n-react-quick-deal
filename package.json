@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "pre-commit": "npm run build"
   },
   "repository": {
@@ -37,14 +37,22 @@
   },
   "homepage": "https://github.com/LilyLoveLife/i18n-react-quick-deal#readme",
   "devDependencies": {
+    "@babel/core": "^7.24.5",
+    "@babel/preset-env": "^7.24.5",
+    "@babel/preset-typescript": "^7.24.1",
+    "@jest/types": "^29.6.3",
     "@types/babel__core": "^7.20.5",
-    "@types/node": "^20.12.7"
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.12.7",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "ts-node": "^10.9.2"
   },
   "dependencies": {
-    "@babel/core": "^7.24.4",
     "@babel/template": "^7.24.0",
     "@babel/types": "^7.24.0",
     "@changesets/cli": "^2.27.1",
     "chalk": "^2.4.2"
-  }
+  },
+  "coverageDirectory": "<rootDir>/jest/coverage"
 }

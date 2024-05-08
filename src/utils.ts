@@ -6,6 +6,8 @@ import path from 'path'
 import _generator from '@babel/generator'
 import {Statement} from '@babel/types'
 import chalk from 'chalk'
+import readline from 'readline'
+
 const template = babel.template
 const generator = (_generator as any).default
 
@@ -309,3 +311,9 @@ export const writeFileIfNotExists = (directoryPath: string, fileName: string, co
     console.log(err)
   }
 }
+
+// export const readFileContentByLine = (filePath: string) => {
+//   const fileContent = fs.readFileSync(filePath).toString();
+//   const lines = fileContent.split('\n');
+//   return lines;
+// }

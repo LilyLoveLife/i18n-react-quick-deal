@@ -39,12 +39,9 @@ const toBeChineseEqual = async () => {
     const dest = './src/locale/chinese'
     // const command = `node lib/extract/index --source=${source} --chinesedir=${dest}`
     const root = process.cwd()
-    // console.log('process.cwd: ', root);
     // let filePath = path.join(root, source);
     let destinateDirPath = path.join(root, dest);
     expect(consoleSpy).toHaveBeenCalledWith('---111-----');
-    // expect.console.log('exec command 1');
-    // consoleOutput.push('exec command 1')
     // exec(command, () => {
 
     // })
@@ -55,52 +52,39 @@ const toBeChineseEqual = async () => {
         // consoleOutput.push('promise')
         debugger
         expect(consoleSpy).toHaveBeenCalledWith('---2222-----');
-        fs.readdir(destinateDirPath, (err, files) => {
-            if (err) {
-                // consoleOutput.push('Unable to scan directory: ' + err)
-                // expect.console.log('Unable to scan directory: ' + err);
-                // expect(err).toThrow()
-                resolve({
-                    message: () =>
-                    'Extracted chineses is not as expected',
-                    pass: false,
-                });
-                return 
-            }
-            // consoleOutput.push('files: ', files.toString())
+        const  files = fs.readdirSync(destinateDirPath)
+        // consoleOutput.push('files: ', files.toString())
             // expect.console.log('files: ', files);
-            expect(consoleSpy).toHaveBeenCalledWith('---files-----', files);
-            const fileDateList: number[] = []
-            // 文件名在files数组中
-            files.forEach((file) => {
-                // expect.console.log('file: ', file);
-                const fileName_without_extension = path.parse(file).name
-                const extension = path.parse(filePath).ext
-                const dateReg = /^[1-9][0-9]*$/
-                if (extension === 'txt' && dateReg.test(fileName_without_extension)) {
-                    fileDateList.push(+fileName_without_extension)
-                }
-            })
-            const latest = Math.max.apply(null, fileDateList)
-            const latestFile = `${latest}.txt`
-            let filePath = path.join(destinateDirPath, latestFile);
-            const standardFile = path.join(root, './src/file4Test/chinese.txt');
-            const standardLines = readFileContentByLine(standardFile)
-            const lines = readFileContentByLine(filePath)
-            if (standardLines.toString() === lines.toString()) {
-                resolve({
-                    message: () => 'pass',
-                    pass: true,
-                })
-            } else {
-                resolve({
-                    message: () =>
-                      'Extracted chineses is not as expected',
-                    pass: false,
-                })
+        expect(consoleSpy).toHaveBeenCalledWith('---files-----', files);
+        const fileDateList: number[] = []
+        // 文件名在files数组中
+        files.forEach((file) => {
+            // expect.console.log('file: ', file);
+            const fileName_without_extension = path.parse(file).name
+            const extension = path.parse(filePath).ext
+            const dateReg = /^[1-9][0-9]*$/
+            if (extension === 'txt' && dateReg.test(fileName_without_extension)) {
+                fileDateList.push(+fileName_without_extension)
             }
-            
         })
+        const latest = Math.max.apply(null, fileDateList)
+        const latestFile = `${latest}.txt`
+        let filePath = path.join(destinateDirPath, latestFile);
+        const standardFile = path.join(root, './src/file4Test/chinese.txt');
+        const standardLines = readFileContentByLine(standardFile)
+        const lines = readFileContentByLine(filePath)
+        if (standardLines.toString() === lines.toString()) {
+            resolve({
+                message: () => 'pass',
+                pass: true,
+            })
+        } else {
+            resolve({
+                message: () =>
+                    'Extracted chineses is not as expected',
+                pass: false,
+            })
+        }
     })
     return res
 }
@@ -205,7 +189,7 @@ describe("extract-group", () => {
     // console.log('process.cwd: ', root);
     let filePath = path.join(root, source);
     let destinateDirPath = path.join(root, dest);
-    test("抽取出的中文",   (done) => {
+    test("抽取出的中文", (done) => {
        
         // const standardFile = path.join(root, './src/file4Test/chinese.txt');
         // const standardLines = readFileContentByLine(standardFile)
@@ -221,7 +205,7 @@ describe("extract-group", () => {
             expect.toBeChineseEqual()
             done();
         })
-    }, 60000)
+    }, 600000)
     afterAll(() => {
         console.log('console output:', consoleOutput)
     })

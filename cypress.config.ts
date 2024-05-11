@@ -33,15 +33,16 @@ export default defineConfig({
             files.forEach((file) => {
               // expect.console.log('file: ', file);
               const fileName_without_extension = path.parse(file).name
+              console.log('----fileName_without_extension-----', fileName_without_extension)
               const extension = path.parse(filePath).ext
               const dateReg = /^[1-9][0-9]*$/
-              if (extension === 'txt' && dateReg.test(fileName_without_extension)) {
-                  fileDateList.push(+fileName_without_extension)
+              if (extension === '.txt' && dateReg.test(fileName_without_extension)) {
+                  fileDateList.push(Number(fileName_without_extension))
               }
             })
             const latest = Math.max.apply(null, fileDateList)
             const latestFile = `${latest}.txt`
-            let resultFilePath = path.join(destinateDirPath, latestFile);
+            let resultFilePath = `./src/${latestFile}` //path.join(destinateDirPath, latestFile);
             console.log('----resultFilePath-----', resultFilePath)
             const lines = readFileContentByLine(resultFilePath)
             console.log('----result-----', lines)

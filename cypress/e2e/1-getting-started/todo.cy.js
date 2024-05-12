@@ -18,7 +18,8 @@ import { readFileSync } from 'fs';
 
 const readFileContentByLine = (filePath) => {
   // const fileContent = readFileSync(filePath).toString();
-  const fileContent = cy.readFile(filePath, {timeout: 60000}).toString();
+  // const fileContent = cy.readFile(filePath, {timeout: 60000});
+  // const fileContent = fs.readFileSync(filePath).toString();
   const lines = fileContent.split('\n');
   return lines;
 }
@@ -42,14 +43,10 @@ describe('example to-do app', () => {
     expect(o).to.equal(o)
     expect(o).to.deep.equal({ foo: 'bar' })
     const root = process.cwd()
-    cy.log('----root-----', root)
     const standardFile = './src/file4Test/chinese.txt'
-
-    // const standardFile = join(root, '../../../src/file4Test/chinese.txt');
-    cy.log('----standardFile-----', standardFile)
-    const standardLines = readFileContentByLine(standardFile)
-    cy.log('----standardLines-----', JSON.stringify(standardLines))
-    cy.task('getExtractResult').should('deep.equal', standardLines)
+    cy.task('getExtractResult').then((result) => {
+      cy.task('readFileMaybe', standardFile).should('deep.equal', result)
+    })
   })
   // beforeEach(() => {
   //   // Cypress starts out with a blank slate for each test

@@ -41,7 +41,11 @@ jobs:
       - name: 安装依赖
         run: npm install
       - name: 构建
-        run: npm run build      
+        run: npm run build
+      - name: 集成测试
+        uses: cypress-io/github-action@v6
+        with:
+          browser: chrome   
       - name: 合并版本，发布
         uses: changesets/action@v1
         with:

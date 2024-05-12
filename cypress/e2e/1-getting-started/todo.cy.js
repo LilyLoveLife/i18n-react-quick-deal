@@ -24,6 +24,21 @@ const readFileContentByLine = (filePath) => {
   return lines;
 }
 
+const runExtract = () => {
+  const source = './src/file4Test'
+    const dest = './src'
+    const command = `node lib/extract/index --source=${source} --chinesedir=${dest}`
+    cy.log('----extract command-----', command)
+    cy.exec(command, { timeout: 6000000 })
+}
+const runReplace = () => {
+    const source = './src/file4Test/source'
+    const keymap = './src/file4Test/keymap'
+    const command = `node lib/replace/index --source=${source} --keymap=${keymap}`
+    cy.log('----replace command-----', command)
+    cy.exec(command, { timeout: 6000000 })
+}
+
 describe('example to-do app', () => {
   beforeEach(() => {
     // Cypress starts out with a blank slate for each test
@@ -32,11 +47,12 @@ describe('example to-do app', () => {
     // we include it in our beforeEach function so that it runs before each test
     // cy.visit('https://example.cypress.io/todo')
 
-    const source = './src/file4Test'
-    const dest = './src'
-    const command = `node lib/extract/index --source=${source} --chinesedir=${dest}`
-    cy.log('----command-----', command)
-    cy.exec(command, { timeout: 6000000 })
+    // const source = './src/file4Test'
+    // const dest = './src'
+    // const command = `node lib/extract/index --source=${source} --chinesedir=${dest}`
+    // cy.log('----command-----', command)
+    // cy.exec(command, { timeout: 6000000 })
+    runExtract()
   })
   it('valid extract result', () => {
     const o = { foo: 'bar' }
@@ -48,6 +64,12 @@ describe('example to-do app', () => {
       cy.task('readFileMaybe', standardFile).should('deep.equal', result)
     })
   })
+  // it('valid replace result', () => {
+  //   const standardFile = './src/file4Test/chinese.txt'
+  //   cy.task('getExtractResult').then((result) => {
+  //     cy.task('readFileMaybe', standardFile).should('deep.equal', result)
+  //   })
+  // })
   // beforeEach(() => {
   //   // Cypress starts out with a blank slate for each test
   //   // so we must tell it to visit our website with the `cy.visit()` command.
@@ -176,4 +198,16 @@ describe('example to-do app', () => {
   //     cy.contains('Clear completed').should('not.exist')
   //   })
   // })
+})
+describe('example to-do app', () => {
+  beforeEach(() => {
+    runReplace()
+  })
+  it('valid replace result', () => {
+    const source = './src/file4Test/source'
+    const standardFile = './src/file4Test/chinese.txt'
+    cy.task('getExtractResult').then((result) => {
+      cy.task('readFileMaybe', standardFile).should('deep.equal', result)
+    })
+  })
 })

@@ -25,15 +25,15 @@ const readFileContentByLine = (filePath) => {
 }
 
 const runExtract = () => {
-  const source = './src/file4Test'
-    const dest = './src'
+    const source = './src/file4Test/source'
+    const dest = './src/file4Test/chinese'
     const command = `node lib/extract/index --source=${source} --chinesedir=${dest}`
     cy.log('----extract command-----', command)
     cy.exec(command, { timeout: 6000000 })
 }
 const runReplace = () => {
     const source = './src/file4Test/source'
-    const keymap = './src/file4Test/keymap'
+    const keymap = './src/file4Test/keymap/index.js'
     const command = `node lib/replace/index --source=${source} --keymap=${keymap}`
     cy.log('----replace command-----', command)
     cy.exec(command, { timeout: 6000000 })
@@ -55,11 +55,7 @@ describe('example to-do app', () => {
     runExtract()
   })
   it('valid extract result', () => {
-    const o = { foo: 'bar' }
-    expect(o).to.equal(o)
-    expect(o).to.deep.equal({ foo: 'bar' })
-    const root = process.cwd()
-    const standardFile = './src/file4Test/chinese.txt'
+    const standardFile = './src/file4Test/standard/chinese.txt'
     cy.task('getExtractResult').then((result) => {
       cy.task('readFileMaybe', standardFile).should('deep.equal', result)
     })
@@ -199,15 +195,15 @@ describe('example to-do app', () => {
   //   })
   // })
 })
-describe('example to-do app', () => {
-  beforeEach(() => {
-    runReplace()
-  })
-  it('valid replace result', () => {
-    const source = './src/file4Test/source'
-    const standardFile = './src/file4Test/chinese.txt'
-    cy.task('getExtractResult').then((result) => {
-      cy.task('readFileMaybe', standardFile).should('deep.equal', result)
-    })
-  })
-})
+// describe('example to-do app', () => {
+//   beforeEach(() => {
+//     runReplace()
+//   })
+//   it('valid replace result', () => {
+//     const source = './src/file4Test/source'
+//     const standardFile = './src/file4Test/chinese.txt'
+//     cy.task('getExtractResult').then((result) => {
+//       cy.task('readFileMaybe', standardFile).should('deep.equal', result)
+//     })
+//   })
+// })

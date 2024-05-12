@@ -25,3 +25,4 @@
 ts文件1
 abc ts文件2
 ts文件3 {{PageSize}}
+ts文件4

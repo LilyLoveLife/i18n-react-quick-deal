@@ -47,16 +47,10 @@ export default defineConfig({
       on('task', {
         getExtractResult() {
           const root = process.cwd()
-          const source = './src/file4Test'
-          const dest = './src'
-
-          // const command = `node ./lib/extract/index --source=${source} --chinesedir=${dest}`
-          // console.log('----command-----', command)
-          // cy.exec(command, { timeout: 6000 }).then(() => {
-
-            let filePath = source
-            let destinateDirPath = dest
-            const files = fs.readdirSync(destinateDirPath)
+          const source = './src/file4Test/source'
+          const dest = './src/file4Test/chinese'
+  
+            const files = fs.readdirSync(dest)
            
             const fileDateList: number[] = []
             let temp: any[] = []
@@ -76,7 +70,7 @@ export default defineConfig({
             })
             const latest = Math.max.apply(null, fileDateList)
             const latestFile = `${latest}.txt`
-            let resultFilePath = `./src/${latestFile}`
+            let resultFilePath = `${dest}/${latestFile}`
             return readFileContent(resultFilePath)
         },
         getReplaceResult() {

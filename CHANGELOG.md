@@ -1,4 +1,3 @@
-## 1.0.5
 
 ## 1.0.7
 
@@ -15,6 +14,8 @@
 ### Patch Changes
 
 - e2eff98: Test version
+
+## 1.0.5
 
 # i18n-react-quick-deal
 

@@ -1,9 +1,4 @@
 /// <reference types="cypress" />
-// import path from 'path'
-// import fs from 'fs'
-import { join } from 'path';
-
-import { readFileSync } from 'fs';
 
 // Welcome to Cypress!
 //
@@ -17,9 +12,6 @@ import { readFileSync } from 'fs';
 // https://on.cypress.io/introduction-to-cypress
 
 const readFileContentByLine = (filePath) => {
-  // const fileContent = readFileSync(filePath).toString();
-  // const fileContent = cy.readFile(filePath, {timeout: 60000});
-  // const fileContent = fs.readFileSync(filePath).toString();
   const lines = fileContent.split('\n');
   return lines;
 }
@@ -39,7 +31,7 @@ const runReplace = () => {
     cy.exec(command, { timeout: 6000000 })
 }
 
-describe('example to-do app', () => {
+describe('example to-do1 app', () => {
   beforeEach(() => {
     // Cypress starts out with a blank slate for each test
     // so we must tell it to visit our website with the `cy.visit()` command.
@@ -195,15 +187,13 @@ describe('example to-do app', () => {
   //   })
   // })
 })
-// describe('example to-do app', () => {
-//   beforeEach(() => {
-//     runReplace()
-//   })
-//   it('valid replace result', () => {
-//     const source = './src/file4Test/source'
-//     const standardFile = './src/file4Test/chinese.txt'
-//     cy.task('getExtractResult').then((result) => {
-//       cy.task('readFileMaybe', standardFile).should('deep.equal', result)
-//     })
-//   })
-// })
+describe('example to-do2 app', () => {
+  beforeEach(() => {
+    runReplace()
+  })
+  it('valid replace result', () => {
+    cy.task('getExtractResult').then(() => {
+      cy.task('validReplaceResult').should('equal', true)
+    })
+  })
+})

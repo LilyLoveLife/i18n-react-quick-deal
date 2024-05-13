@@ -1,6 +1,6 @@
 
 /* eslint-disable no-useless-concat */
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 // import { useTranslation } from "react-i18next";
 
 const PageSize = 20

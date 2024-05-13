@@ -1,24 +1,17 @@
-"use strict";
-
 import { useTranslation } from 'react-i18next';
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = void 0;
-var _react = require("react");
 /* eslint-disable no-useless-concat */
-
+import { useEffect, useState } from 'react';
 // import { useTranslation } from "react-i18next";
 
 const PageSize = 20;
-const List = () => {
+const List: React.FC = () => {
   const {
     t
   } = useTranslation();
   // const { t } = useTranslation();
   const a = false;
-  const [score, setScore] = (0, _react.useState)(59);
-  (0, _react.useEffect)(() => {
+  const [score, setScore] = useState<number>(59);
+  useEffect(() => {
     // 做特殊逻辑
     const key = localStorage.getItem('tabKey');
     if (key) {
@@ -27,11 +20,11 @@ const List = () => {
     }
   }, []);
   // 切换
-  const onChange = key => {
+  const onChange = (key: string) => {
     setActiveKey(key);
     localStorage.setItem('tabKey', key);
   };
-  const [activeKey, setActiveKey] = (0, _react.useState)('todo');
+  const [activeKey, setActiveKey] = useState('todo');
   const tabBarItems = [{
     key: 'todo',
     title: t('list.mytodo')
@@ -43,7 +36,7 @@ const List = () => {
    * 今日面试
    * @returns 
    */
-  const getStr = str => {
+  const getStr = (str: any) => {
     return t('list.today');
   };
   // const getDom = () => {
@@ -62,10 +55,10 @@ const List = () => {
       age2: `${translate(t('common.name44aa'))} ${PageSize}`
     };
   };
-  const func1 = name => {
+  const func1 = (name: string) => {
     return /* i18n-ignore */'今日面试';
   };
-  const translate = name => {
+  const translate = (name: string) => {
     return '1111111';
   };
   const aa = false;
@@ -123,4 +116,4 @@ const List = () => {
       {/* </div > */}
     </>;
 };
-var _default = exports.default = List;
+export default List;

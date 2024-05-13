@@ -98,7 +98,6 @@ export default defineConfig({
               }
             })
             // translatedList: ["src/file4Test/source/index_translated_1715583542768.tsx"]
-            console.log('------translatedList-------', translatedList)
 
             // latest: "src/file4Test/source/index2_translated_1715585129880.tsx"
             const latest = translatedList.reduce((preFile, currFile) => {
@@ -110,7 +109,6 @@ export default defineConfig({
               }
               return ''
             }, '')
-            console.log('------latest-------', latest)
             if (latest) {latest
               return {
                 ...item,
@@ -135,7 +133,18 @@ export default defineConfig({
               }
             }
           })
-
+          // 调试用
+          // return obj2Valid?.map((each) => {
+          //   const {result, standard} = each || {}
+          //   if (result === undefined && standard === undefined) return true
+          //   if (result && standard) {
+          //     return {
+          //       result: readFileContent(result),
+          //       standard: readFileContent(standard)
+          //     }
+          //   }
+          //   return false
+          // })
          return obj2Valid?.every((each) => {
             const {result, standard} = each || {}
             if (result === undefined && standard === undefined) return true

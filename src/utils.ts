@@ -311,9 +311,3 @@ export const writeFileIfNotExists = (directoryPath: string, fileName: string, co
     console.log(err)
   }
 }
-
-// export const readFileContentByLine = (filePath: string) => {
-//   const fileContent = fs.readFileSync(filePath).toString();
-//   const lines = fileContent.split('\n');
-//   return lines;
-// }
